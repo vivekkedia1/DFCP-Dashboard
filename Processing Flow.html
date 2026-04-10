@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+      <meta charset="UTF-8">
+      <title>DFCP Lifecycle</title>
+      <style>
+         :root {
+         --blue: #0095C8;
+         --green: #A4D600;
+         --red: #A4343A;
+         --yellow: #F5C000;
+         --teal: #1f5f7a;
+         }
+         * { box-sizing: border-box; margin: 0; padding: 0; }
+         body { font-family: 'Inter', sans-serif; background: #f0f4f8; }
+         .topbar {
+         background: var(--blue);
+         color: white;
+         padding: 14px 20px;
+         font-size: 17px;
+         font-weight: 600;
+         display: flex;
+         align-items: center;
+         gap: 14px;
+         }
+         .topbar button {
+         background: rgba(255,255,255,0.2);
+         border: none;
+         color: white;
+         padding: 5px 12px;
+         border-radius: 5px;
+         cursor: pointer;
+         font-family: 'Inter', sans-serif;
+         font-size: 13px;
+         }
+         .topbar button:hover { background: rgba(255,255,255,0.35); }
+         /* ── FUNNEL DASHBOARD ─────────────────── */
+         #dashboardScreen { display: block; }
+         .funnel-outer {
+         overflow-x: auto;
+         overflow-y: hidden;
+         height: 580px;
+         background: #f0f4f8;
+         padding: 0;
+         position: relative;
+         }
+         .funnel-inner {
+         position: relative;
+         height: 580px;
+         }
+         .sg {
+         position: absolute;
+         width: 162px;
+         cursor: pointer;
+         }
+         .sg:hover .sg-box { background: #fafffe; }
+         .sg-header {
+         background: var(--teal);
+         color: white;
+         text-align: center;
+         padding: 8px 6px;
+         font-size: 11px;
+         font-weight: 600;
+         border-radius: 4px 4px 0 0;
+         line-height: 1.3;
+         height: 36px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         }
+         .sg-box {
+         background: white;
+         border: 1px solid #d8dde6;
+         padding: 9px 10px;
+         font-size: 11px;
+         font-weight: 600;
+         transition: background 0.15s;
+         height: 38px;
+         display: flex;
+         align-items: center;
+         }
+         .sg-box.approved { color: #2e7d32; border-top: none; }
+         .sg-box.pending  { color: #b06000; border-top: none; margin-top: 5px; }
+         .sg-box.in-sla {
+         color: #2e7d32;
+         border-top: none;
+         margin-top: 5px;
+         }
+         .sg-box.out-sla {
+         color: #a4343a;
+         border-top: none;
+         margin-top: 5px;
+         }
+         .sg-box.rejected { color: var(--red); border-top: none; margin-top: 5px; }
+         .sg-box.approved { border-radius: 0; }
+         .sg-box.rejected { border-radius: 0 0 4px 4px; }
+         .sg-init {
+         position: absolute;
+         width: 138px;
+         cursor: pointer;
+         }
+         .sg-init:hover .ig-count { background: #f0faff; }
+         .ig-header {
+         background: var(--teal);
+         color: white;
+         text-align: center;
+         padding: 8px 6px;
+         font-size: 11px;
+         font-weight: 600;
+         border-radius: 4px 4px 0 0;
+         height: 36px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         }
+         .ig-count {
+         background: white;
+         border: 1px solid #d8dde6;
+         border-top: none;
+         text-align: center;
+         font-size: 26px;
+         font-weight: 700;
+         color: var(--teal);
+         padding: 10px 8px;
+         border-radius: 0 0 4px 4px;
+         line-height: 1;
+         }
+         .ig-label {
+         text-align: center;
+         font-size: 9px;
+         color: #999;
+         margin-top: 4px;
+         font-weight: 400;
+         }
+         /* ── REPORTING DASHBOARD ─────────────────── */
+         .report-section {
+         padding: 28px 24px 40px;
+         background: #f0f4f8;
+         }
+         .report-section-title {
+         font-size: 15px;
+         font-weight: 600;
+         color: #333;
+         margin-bottom: 16px;
+         padding-bottom: 8px;
+         border-bottom: 2px solid #dce3ec;
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         }
+         .report-section-title span {
+         font-size: 11px;
+         font-weight: 400;
+         color: #888;
+         margin-left: 4px;
+         }
+         /* KPI Cards */
+         .kpi-row {
+         display: grid;
+         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+         gap: 14px;
+         margin-bottom: 28px;
+         }
+         .kpi-card {
+         background: white;
+         border-radius: 10px;
+         padding: 16px 18px;
+         box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+         border-top: 4px solid var(--blue);
+         position: relative;
+         overflow: hidden;
+         }
+         .kpi-card.green  { border-top-color: #2e7d32; }
+         .kpi-card.amber  { border-top-color: #c07a00; }
+         .kpi-card.red    { border-top-color: var(--red); }
+         .kpi-card.teal   { border-top-color: var(--teal); }
+         .kpi-card.purple { border-top-color: #6a3f9e; }
+         .kpi-label {
+         font-size: 11px;
+         color: #777;
+         font-weight: 500;
+         margin-bottom: 6px;
+         text-transform: uppercase;
+         letter-spacing: 0.5px;
+         }
+         .kpi-value {
+         font-size: 30px;
+         font-weight: 700;
+         color: #1a1a2e;
+         line-height: 1;
+         }
+         .kpi-sub {
+         font-size: 11px;
+         color: #999;
+         margin-top: 4px;
+         }
+         .kpi-icon {
+         position: absolute;
+         right: 14px;
+         top: 14px;
+         font-size: 22px;
+         opacity: 0.15;
+         }
+         /* Chart grid */
+         .chart-grid {
+         display: grid;
+         grid-template-columns: 1fr 1fr;
+         gap: 16px;
+         margin-bottom: 20px;
+         }
+         .chart-grid-3 {
+         display: grid;
+         grid-template-columns: 1fr 1fr 1fr;
+         gap: 16px;
+         margin-bottom: 20px;
+         }
+         .chart-card {
+         background: white;
+         border-radius: 10px;
+         padding: 18px 20px;
+         box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+         }
+         .chart-card.full { grid-column: 1 / -1; }
+         .chart-title {
+         font-size: 13px;
+         font-weight: 600;
+         color: #333;
+         margin-bottom: 14px;
+         }
+         .chart-subtitle {
+         font-size: 11px;
+         color: #999;
+         margin-top: 2px;
+         font-weight: 400;
+         }
+         .chart-wrap {
+         position: relative;
+         }
+         /* Stage health table */
+         .health-table {
+         width: 100%;
+         border-collapse: collapse;
+         font-size: 12px;
+         }
+         .health-table th {
+         background: #f4f6f9;
+         padding: 8px 10px;
+         text-align: left;
+         font-size: 11px;
+         color: #555;
+         font-weight: 600;
+         border-bottom: 2px solid #e8ebf0;
+         }
+         .health-table td {
+         padding: 8px 10px;
+         border-bottom: 1px solid #f2f4f7;
+         vertical-align: middle;
+         }
+         .health-table tr:last-child td { border-bottom: none; }
+         .mini-bar-wrap {
+         width: 120px;
+         height: 8px;
+         background: #f0f0f0;
+         border-radius: 4px;
+         overflow: hidden;
+         display: inline-block;
+         }
+         .mini-bar { height: 100%; border-radius: 4px; }
+         .status-pill {
+         display: inline-block;
+         padding: 2px 8px;
+         border-radius: 10px;
+         font-size: 10px;
+         font-weight: 600;
+         }
+         .pill-green  { background: #e8f5e9; color: #2e7d32; }
+         .pill-amber  { background: #fff8e1; color: #b06000; }
+         .pill-red    { background: #fdecea; color: var(--red); }
+         /* ── FLOW SCREEN ──────────────────────── */
+         #flowScreen { display: none; }
+         .pipeline { display: flex; gap: 6px; padding: 10px 14px; background: white; overflow-x: auto; border-bottom: 1px solid #eee; }
+         .sp { padding: 5px 10px; background: #eee; border-radius: 5px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+         .sp.active { background: var(--blue); color: white; }
+         .tabs { padding: 10px 14px; display: flex; gap: 25px; flex-wrap: wrap; background: #f8f9fa; border-bottom: 1px solid #eee; }
+         .tab { padding: 6px 12px; background: #eee; border-radius: 5px; cursor: pointer; font-size: 12px; }
+         .tab.active { background: var(--blue); color: white; }
+         .tbl-wrap { padding: 18px; }
+         table {
+         width: 100%;
+         background: white;
+         border-collapse: separate;
+         border-spacing: 0;
+         border-radius: 10px;
+         overflow: hidden;
+         box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+         }
+         /* HEADER */
+         th {
+         position: sticky;
+         top: 0;
+         background: #f4f7fb;
+         padding: 12px 14px;
+         font-size: 11px;
+         font-weight: 600;
+         color: #556;
+         text-transform: uppercase;
+         letter-spacing: 0.4px;
+         border-bottom: 2px solid #e6ebf2;
+         }
+         /* BODY CELLS */
+         td {
+         padding: 12px 14px;
+         font-size: 12px;
+         color: #333;
+         border-bottom: 1px solid #f1f3f6;
+         transition: background 0.2s ease;
+         }
+         /* ROW HOVER */
+         tr:hover td {
+         background: #f8fbff;
+         }
+         /* LAST ROW FIX */
+         tr:last-child td {
+         border-bottom: none;
+         }
+         /* FIRST COLUMN EMPHASIS */
+         td:first-child {
+         font-weight: 600;
+         color: #1a1a2e;
+         }
+         /* CENTER ALIGN SPECIFIC */
+         td:nth-child(3),
+         td:nth-child(4),
+         td:nth-child(5),
+         td:nth-child(6),
+         td:nth-child(7) {
+         text-align: center;
+         }
+         .badge {
+         padding: 4px 10px;
+         border-radius: 20px;
+         font-size: 10px;
+         font-weight: 600;
+         display: inline-block;
+         }
+         .badge.pending {
+         background: #fff4d6;
+         color: #b06000;
+         }
+         .badge.completed {
+         background: #e8f5e9;
+         color: #2e7d32;
+         }
+         .badge.rejected {
+         background: #fdecea;
+         color: #a4343a;
+         }
+         .badge.not-started {
+         background: #eee;
+         color: #777;
+         }
+         .panel {
+         position: fixed; right: 0; top: 0;
+         width: 400px; height: 100%;
+         background: white; border-left: 2px solid #e0e4ea;
+         display: none; overflow: hidden; z-index: 100;
+         box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+         }
+         .panel-header { padding: 14px 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+         .panel-header h3 { font-size: 16px; font-weight: 600; color: #222; }
+         .panel-body { padding: 16px 18px; overflow-y: auto; height: calc(100% - 120px); }
+         .panel-footer { position: absolute; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 18px; border-top: 1px solid #eee; }
+         button, .btn { background: var(--blue); color: white; border: none; padding: 7px 12px; border-radius: 5px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; }
+         button:hover:not(:disabled), .btn:hover { background: #007aaa; }
+         button:disabled { background: #ccc; cursor: not-allowed; }
+         .btn-red { background: var(--red); }
+         .btn-red:hover { background: #832027; }
+         .btn-sec { background: transparent; border: 1px solid var(--blue); color: var(--blue); }
+         .btn-sec:hover { background: var(--blue); color: white; }
+         #modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:none; justify-content:center; align-items:center; z-index:200; }
+         #modal > div { background:white; padding:24px; border-radius:10px; width:280px; text-align:center; }
+         #modal h3 { font-size:16px; margin-bottom:10px; }
+         #modal p { font-size:13px; color:#666; margin-bottom:16px; }
+         /* ===== TAB UPGRADE ===== */
+         .tab {
+         position: relative;
+         padding: 10px 22px;   /* ⬅ bigger */
+         background: #eee;
+         border-radius: 8px;
+         cursor: pointer;
+         font-size: 13px;     /* ⬅ bigger text */
+         font-weight: 600;
+         transition: all 0.2s ease;
+         }
+         /* Hover effect */
+         .tab:hover {
+         transform: translateY(-2px);
+         box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+         }
+         /* Active tab */
+         .tab.active {
+         background: var(--blue);
+         color: white;
+         }
+         /* Badge (circle count) */
+         .tab-badge {
+         position: absolute;
+         top: -8px;
+         right: -10px;
+         background: white;
+         color: #1f5f7a;
+         border: 2px solid #1f5f7a;
+         border-radius: 50%;
+         width: 24px;
+         height: 24px;
+         font-size: 10px;
+         font-weight: 600;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         }
+         /* Completed = Green */
+         .tab:nth-child(3) .tab-badge {
+         border-color: #2e7d32;
+         color: #2e7d32;
+         }
+         /* Pending = Orange */
+         .tab:nth-child(2) .tab-badge {
+         border-color: #c07a00;
+         color: #c07a00;
+         }
+         /* Rejected = Red */
+         .tab:nth-child(5) .tab-badge {
+         border-color: #a4343a;
+         color: #a4343a;
+         }
+         /* Overdue = Dark red */
+         .tab:nth-child(4) .tab-badge {
+         border-color: #8b0000;
+         color: #8b0000;
+         }
+         /* Active badge */
+         .tab.active .tab-badge {
+         border-color: white;
+         color: var(--blue);
+         }
+         /* Pipeline enhanced */
+         .sp {
+         padding: 10px 14px;
+         background: #eee;
+         border-radius: 8px;
+         cursor: pointer;
+         min-width: 120px;
+         transition: all 0.2s ease;
+         }
+         .sp:hover {
+         transform: translateY(-2px);
+         box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+         }
+         .sp.active {
+         background: var(--blue);
+         color: white;
+         }
+         /* Title */
+         .sp-title {
+         font-size: 12px;
+         font-weight: 600;
+         margin-bottom: 4px;
+         }
+         /* Count badge */
+         .sp-count {
+         background: white;
+         border-radius: 50%;
+         padding: 2px 6px;
+         font-size: 10px;
+         margin-left: 6px;
+         }
+         /* Sub text */
+         .sp-sub {
+         font-size: 10px;
+         line-height: 1.4;
+         }
+         /* Colors */
+         .sp-approved { color: #2e7d32; }
+         .sp-pending  { color: #c07a00; }
+         .sp-rejected { color: #a4343a; }
+         /* Active override */
+         .sp.active .sp-count {
+         color: var(--blue);
+         }
+         /* ===== PIPELINE CARD UI ===== */
+         .pipeline {
+         display: flex;
+         gap: 12px;
+         padding: 12px 16px;
+         background: white;
+         overflow-x: auto;
+         }
+         /* CARD */
+         .sp-card {
+         min-width: 120px;
+         background: #2f5f73;
+         color: white;
+         border-radius: 10px;
+         padding: 12px 10px;
+         text-align: center;
+         cursor: pointer;
+         transition: all 0.2s ease;
+         }
+         /* Hover */
+         .sp-card:hover {
+         transform: translateY(-3px);
+         box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+         }
+         /* Active */
+         .sp-card.active {
+         background: var(--blue);
+         }
+         /* Title */
+         .sp-title {
+         font-size: 12px;
+         font-weight: 600;
+         margin-bottom: 4px;
+         }
+         /* Big number */
+         .sp-total {
+         font-size: 22px;
+         font-weight: 700;
+         margin-bottom: 6px;
+         }
+         /* Bottom row */
+         .sp-row {
+         display: flex;
+         justify-content: space-between;
+         font-size: 10px;
+         opacity: 0.9;
+         }
+         /* Colors */
+         .sp-row .ok {
+         color: #a4d600;
+         }
+         .sp-row .wait {
+         color: #ffd54f;
+         }
+         .sp-row .bad {
+         color: #ff8a80;
+         }
+         .sla-breach {
+         background: #fdecea;
+         color: #a4343a;
+         padding: 3px 8px;
+         border-radius: 6px;
+         font-size: 11px;
+         font-weight: 600;
+         }
+         .sla-ok {
+         background: #e8f5e9;
+         color: #2e7d32;
+         padding: 3px 8px;
+         border-radius: 6px;
+         font-size: 11px;
+         font-weight: 600;
+         }
+         .row-overdue td {
+         background: #fff5f5 !important;
+         }
+		 .action-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-body {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+      </style>
+   </head>
+   <body>
+      <div id="modal">
+         <div>
+            <h3>Confirm Move</h3>
+            <p>Move this applicant to the next stage?</p>
+            <button onclick="proceedMove()" style="margin-right:8px;">Yes, Move</button>
+            <button class="btn-sec" onclick="document.getElementById('modal').style.display='none'">Cancel</button>
+         </div>
+      </div>
+      <!-- ═══════════════ DASHBOARD ═══════════════ -->
+      <div id="dashboardScreen">
+         <div class="topbar">
+            &#127968; DFCP Lifecycle Dashboard
+            <button onclick="exportToCSV()">Export Data</button>
+            <!--<select onchange="filterProgram(this.value)" style="margin-left:20px;padding:5px;border-radius:5px;">
+              <option value="all">All Programs</option>
+               <option value="A">Program A</option>
+               <option value="B">Program B</option>
+               
+            </select>-->
+         </div>
+         <!-- FUNNEL (unchanged) -->
+         <div style="padding:16px 20px 6px; font-size:13px; color:#555; font-weight:500; display:flex; justify-content:space-between; align-items:center;">
+            <span>Application Funnel — click any stage to drill in → scroll right to see all stages</span>
+            <button class="funnel-toggle-btn" onclick="toggleFunnel()">Expand</button>
+         </div>
+         <div id="collapsedFlow" style="display:none; padding:10px 16px; background:white; overflow-x:auto;">
+            <div class="pipeline" id="collapsedPipeline"></div>
+         </div>
+         <div class="funnel-outer" id="funnelOuter">
+            <div class="funnel-inner" id="funnelInner">
+               <svg id="arrowSvg" style="position:absolute;top:0;left:0;pointer-events:none;overflow:visible;"></svg>
+            </div>
+         </div>
+         <!-- ═══ REPORTING SECTION ═══ -->
+         <div class="report-section">
+            <!-- KPI CARDS -->
+            <div class="report-section-title">&#128200; Leadership Summary <span>Real-time overview</span></div>
+			<div class="chart-card">
+
+  <!-- HEADER -->
+  <div class="chart-title action-header" style="font-size:20px; font-weight:700;" onclick="toggleActionCenter()">
+    <span>⚠ Action Center</span>
+    <span id="actionToggleIcon">▼</span>
+  </div>
+
+  <!-- BODY -->
+  <div id="actionBody" class="action-body">
+
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <div class="tab active" onclick="switchActionTab('sla')">SLA Breach</div>
+      <div class="tab" onclick="switchActionTab('pending')">Pending by Stage</div>
+      <!--<div class="tab" onclick="switchActionTab('bottleneck')">Bottlenecks</div>-->
+      <div class="tab" onclick="switchActionTab('quick')">Quick Wins</div>
+    </div>
+
+    <div id="actionContent"style="max-height:320px; overflow-y:auto;"></div>
+
+  </div>
+
+</div>
+
+  <!-- Content -->
+  <div id="actionContent"></div>
+</div>
+            <div class="kpi-row" id="kpiRow"></div>
+            <!-- ROW 1: Donut + Bar -->
+            <div class="chart-grid">
+               <div class="chart-card">
+                  <div class="chart-title">
+                     Overall Status Distribution 
+                     <div class="chart-subtitle">All 110 applications across all stages</div>
+                  </div>
+                  <div class="chart-wrap" style="height:220px;display:flex;align-items:center;justify-content:center;">
+                     <canvas id="donutChart"></canvas>
+                  </div>
+               </div>
+               <div class="chart-card">
+                  <div class="chart-title">
+                     Approved vs Pending vs Rejected by Stage 
+                     <div class="chart-subtitle">Count per lifecycle stage</div>
+                  </div>
+                  <div class="chart-wrap" style="height:220px;">
+                     <canvas id="stackedBar"></canvas>
+                  </div>
+               </div>
+            </div>
+            <!-- ROW 2: Funnel drop-off + Pipeline velocity -->
+            <div class="chart-grid" style="display:none;">
+               <div class="chart-card">
+                  <div class="chart-title">
+                     Funnel Drop-off Rate 
+                     <div class="chart-subtitle">% of applicants lost at each stage</div>
+                  </div>
+                  <div class="chart-wrap" style="height:220px;">
+                     <canvas id="dropChart"></canvas>
+                  </div>
+               </div>
+               <div class="chart-card">
+                  <div class="chart-title">
+                     Approved Applications — Pipeline Progress 
+                     <div class="chart-subtitle">How many have reached each stage</div>
+                  </div>
+                  <div class="chart-wrap" style="height:220px;">
+                     <canvas id="lineChart"></canvas>
+                  </div>
+               </div>
+            </div>
+            <!-- ROW 3: Stage Health Table -->
+            <div class="chart-card" style="margin-bottom:16px;">
+               <div class="chart-title">
+                  &#128203; Stage Health Overview 
+                  <div class="chart-subtitle">Approval rate, pending workload and risk per stage</div>
+               </div>
+               <table class="health-table" id="healthTable"></table>
+            </div>
+            <!-- ROW 4: Pending workload bar -->
+            <div class="chart-card">
+               <div class="chart-title">
+                  Pending Workload by Stage 
+                  <div class="chart-subtitle">Applications yet to be actioned at each stage</div>
+               </div>
+               <div class="chart-wrap" style="height:320px;">
+                  <canvas id="pendingBar"></canvas>
+               </div>
+            </div>
+            <div class="chart-card">
+               <div class="chart-title">SLA Risk Heatmap</div>
+               <div class="chart-wrap" style="height:320px;">
+                  <canvas id="slaChart"></canvas>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- ═══════════════ FLOW SCREEN ═══════════════ -->
+      <div id="flowScreen">
+         <div class="topbar">
+            <button onclick="goBack()">&#8592; Back to the Dashboard</button>
+            <span id="flowTitle">Stage</span>
+         </div>
+         <div class="pipeline" id="pipeline"></div>
+         <div class="tabs" id="tabs"></div>
+         <div class="tbl-wrap">
+            <table>
+               <thead>
+                  <tr>
+                     <th>Name</th>
+                     <th>Current Stage</th>
+                     <th>Status</th>
+                     <th>Start Date</th>
+                     <th>End Date</th>
+                     <th>SLA Breached by</th>
+                     <th>Pending Tasks</th>
+                     <th>Rejection Reason</th>
+                  </tr>
+               </thead>
+               <tbody id="tableBody"></tbody>
+            </table>
+         </div>
+      </div>
+      <!-- PANEL -->
+      <div class="panel" id="panel">
+         <div class="panel-header">
+            <h3 id="pName"></h3>
+            <button onclick="closePanel()" style="padding:4px 8px;font-size:13px;">&#10006;</button>
+         </div>
+         <div class="panel-body" id="details"></div>
+         <div class="panel-footer" id="actions"></div>
+      </div>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+      <script>
+         /* ═══════════════════════════════════════
+            DATA
+         ═══════════════════════════════════════ */
+         const stages = [
+           "Interest","Application","Data Entry","Eligibility","Validation",
+           "Interview","Decision","Profile","Tracking","Financial",
+           "Sweat Equity","Construction","Grant","Pre-Closing",
+           "Closing","Post Support","Reporting"
+         ];
+         const SHORT = ["Int","App","DE","Elig","Val","Intv","Dec","Prof","Track","Fin","SE","Con","Grant","PreCl","Clos","PS","Rep"];
+         
+         const stageTasks = {
+           "Interest":     ["Capture basic applicant details","Log interest in system","Send initial communication"],
+           "Application":  ["Fill application form","Upload initial documents","Review submitted application","Mark application complete"],
+           "Data Entry":   ["Enter applicant data into system","Verify entered data","Sync data across systems"],
+           "Eligibility":  ["Calculate income eligibility","Verify financial inputs","Mark eligibility status"],
+           "Validation": ["Credit check initiated","Background verification completed","Validation outcome recorded"],
+           "Interview":    ["Schedule interview","Conduct interview","Record interview notes","Submit outcome"],
+           "Decision":     ["Prepare summary","Present to committee","Record decision","Notify applicant"],
+           "Profile":      ["Create applicant profile","Upload documents","Link application data"],
+           "Tracking":     ["Update application progress","Track milestones","Sync status"],
+           "Financial":    ["Track income changes","Update financial records","Validate compliance"],
+           "Sweat Equity": ["Log volunteer hours","Validate hours","Update progress"],
+           "Construction": ["Track construction progress","Update milestones","Verify completion"],
+           "Grant":        ["Track grant eligibility","Monitor deadlines","Update grant status"],
+           "Pre-Closing":  ["Verify documents","Compliance checks","Prepare checklist"],
+           "Closing":      ["Finalize documentation","Transfer ownership","Confirm closing"],
+           "Post Support": ["Track support","Log interactions","Update notes"],
+           "Reporting":    ["Aggregate data","Generate reports","Submit reports"]
+         };
+         
+         const funnelConfig = {
+           "Interest":     { approved:110, pending:0,  rejected:0  },
+           "Application":  { approved:85,  pending:15, rejected:10 },
+           "Data Entry":   { approved:70,  pending:10, rejected:5  },
+           "Eligibility":  { approved:55,  pending:10, rejected:5  },
+           "Validation":   { approved:45,  pending:5,  rejected:5  },
+           "Interview":    { approved:35,  pending:5,  rejected:5  },
+           "Decision":     { approved:25,  pending:5,  rejected:5  },
+           "Profile":      { approved:20,  pending:3,  rejected:2  },
+           "Tracking":     { approved:18,  pending:1,  rejected:1  },
+           "Financial":    { approved:17,  pending:1,  rejected:0  },
+           "Sweat Equity": { approved:16,  pending:1,  rejected:0  },
+           "Construction": { approved:16,  pending:0,  rejected:0  },
+           "Grant":        { approved:16,  pending:0,  rejected:0  },
+           "Pre-Closing":  { approved:15,  pending:1,  rejected:0  },
+           "Closing":      { approved:15,  pending:0,  rejected:0  },
+           "Post Support": { approved:15,  pending:0,  rejected:0  },
+           "Reporting":    { approved:15,  pending:0,  rejected:0  }
+         };
+         
+         let apps = Array.from({length:110}, (_,i) => ({
+           id:i,
+           name:"Applicant "+(i+1),
+           program: i % 2 === 0 ? "A" : "B",   // 🔴 NEW
+           currentStage:"Interest",
+           rejected:false,
+           rejectedStage:null,
+           rejectionReason:null,
+           funnel:{},
+           stages:{}
+         }));
+         
+         let currentStage = "Interest";
+         let filter = "all";
+         let selectedApp = null;
+         let pendingAction = null;
+         
+         /* ═══════════════════════════════════════
+            FUNNEL LAYOUT (unchanged)
+         ═══════════════════════════════════════ */
+         const BW=162, BH=38, HH=36, BG=5;
+         const GH = HH+3*BH+2*BG;
+         const IW=138, IH=36+46, GAP=90, UNIT=BW+GAP;
+         const STEP=22, CONTAINER_H=575;
+         const SPLITS = stages.slice(1);
+         function gy(i){ return 28 + i * STEP; }
+         const INIT_X=24;
+         const SPLIT0_X = INIT_X+IW+GAP;
+         function gx(i){ return SPLIT0_X + i*UNIT; }
+         const APV_CY = HH+BH/2;
+         const PDG_CY = HH+BH+BG+BH/2;
+         const REJ_CY = HH+2*(BH+BG)+BH/2;
+         const INIT_CY = gy(0)+PDG_CY;
+         const INIT_TOP = INIT_CY-IH/2;
+         const TOTAL_W = gx(SPLITS.length-1)+BW+40;
+         
+         function renderFunnel(){
+           const inner = document.getElementById('funnelInner');
+           inner.style.width = TOTAL_W+'px';
+           let html = `
+           <div class="sg-init" style="left:${INIT_X}px;top:${INIT_TOP}px;" onclick="openStage('Interest')">
+             <div class="ig-header">Interest</div>
+             <div class="ig-count">110</div>
+             <div class="ig-label">Applications Received</div>
+           </div>`;
+           SPLITS.forEach((stage,i)=>{
+             const cfg=funnelConfig[stage], x=gx(i), y=gy(i);
+             html += `
+             <div class="sg" style="left:${x}px;top:${y}px;" onclick="openStage('${stage}')">
+               <div class="sg-header">${stage}</div>
+               <div class="sg-box approved">${stage} Cleared – ${cfg.approved}</div>
+         	  <div class="sg-box in-sla">${stage} In Progress (Within SLA) – ${Math.floor(cfg.pending * 0.6)}</div>
+         	  <div class="sg-box out-sla">${stage} Delayed (Out of SLA) – ${Math.ceil(cfg.pending * 0.4)}</div>
+         	  <div class="sg-box rejected">${stage} Not Cleared – ${cfg.rejected}</div>
+             </div>`;
+           });
+           const svg = document.getElementById('arrowSvg');
+           inner.innerHTML=''; inner.appendChild(svg); inner.insertAdjacentHTML('beforeend',html);
+           drawArrows();
+         }
+         
+         function drawArrows(){
+           const svg=document.getElementById('arrowSvg');
+           svg.setAttribute('width',TOTAL_W); svg.setAttribute('height',CONTAINER_H);
+           const TEAL='#1f5f7a';
+           let d=`<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+             <path d="M1 1L9 5L1 9" fill="none" stroke="${TEAL}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+           </marker></defs>`;
+           function line(x1,y1,x2,y2){
+             const mx=(x1+x2)/2;
+             return `<path d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}" fill="none" stroke="${TEAL}" stroke-width="1.4" marker-end="url(#ah)" opacity="0.75"/>`;
+           }
+           const ix1=INIT_X+IW, iy=INIT_CY, ix2=gx(0), g0y=gy(0);
+           d+=line(ix1,iy,ix2-6,g0y+APV_CY);
+           d+=line(ix1,iy,ix2-6,g0y+PDG_CY);
+           d+=line(ix1,iy,ix2-6,g0y+REJ_CY);
+           for(let i=0;i<SPLITS.length-1;i++){
+             const sx=gx(i)+BW, sy=gy(i)+APV_CY, tx=gx(i+1), tgy=gy(i+1);
+             d+=line(sx,sy,tx-6,tgy+APV_CY);
+             d+=line(sx,sy,tx-6,tgy+PDG_CY);
+             d+=line(sx,sy,tx-6,tgy+REJ_CY);
+           }
+           svg.innerHTML=d;
+         }
+         
+         /* ═══════════════════════════════════════
+            REPORTING DASHBOARD
+         ═══════════════════════════════════════ */
+         function renderReporting(){
+           renderKPIs();
+           renderDonut();
+           renderStackedBar();
+           renderDropChart();
+           renderLineChart();
+           renderHealthTable();
+           renderPendingBar();
+           renderSLARisk();
+		   renderActionCenter();
+         }
+         
+		 let actionTab = 'sla';
+
+function switchActionTab(tab){
+  actionTab = tab;
+  
+  document.querySelectorAll('#actionContent').forEach(()=>{});
+  
+  renderActionCenter();
+
+  // update tab UI
+  document.querySelectorAll('.chart-card .tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+		 
+         function renderKPIs(){
+         const slaBreached = apps.filter(a => {
+           const s = a.stages[a.currentStage];
+           if (!s || a.rejected) return false;
+         
+           const days = Math.ceil((Date.now() - new Date(s.startedAt)) / 86400000);
+           return days > 5;
+         }).length;
+           const totalApps = apps.length;
+         
+           const finalApproved = apps.filter(a => 
+             a.currentStage === "Reporting" && !a.rejected
+           ).length;
+         
+           const totalRejected = apps.filter(a => a.rejected).length;
+         
+           const totalPending = apps.filter(a => 
+             !a.rejected && a.currentStage !== "Reporting"
+           ).length;
+         
+           const convRate = ((finalApproved / totalApps) * 100).toFixed(1);
+         
+           const activeStages = new Set(
+             apps
+               .filter(a => !a.rejected && a.currentStage !== "Reporting")
+               .map(a => a.currentStage)
+           ).size;
+           const forecastData = calculateForecast();
+           const cards = [
+             { label:'Applications Entered',    value: totalApps,      sub:'In the pipeline',           icon:'📋' },
+         	{ label:'Applications Completed',  value: finalApproved,  sub:`${convRate}% conversion rate`, icon:'✅' },
+         	{ label:'Applications In Progress',value: totalPending,   sub:'Across all stages',        icon:'⏳' },
+         	{ label:'Applications Not Passed', value: totalRejected,   sub:'Not moved further',        icon:'✖️' },
+         	{ label:'SLA Breached',            value: slaBreached,    sub:'Needs attention',         icon:'⚠️' },
+             { label:'Active Stages', value:activeStages, sub:'Have pending workload', color:'teal', icon:'🔄' },
+             { label:'Conversion Rate', value:convRate+'%', sub:'Interest → Reporting', color:'purple', icon:'📈' },
+         	{ label:'Forecasted Closures', value:forecastData.forecast, sub:`Based on ${forecastData.conversionRate}% trend`, color:'teal', icon:'🔮' },
+           ];
+         
+           document.getElementById('kpiRow').innerHTML = cards.map(c=>`
+             <div class="kpi-card ${c.color}">
+               <div class="kpi-icon">${c.icon}</div>
+               <div class="kpi-label">${c.label}</div>
+               <div class="kpi-value">${c.value}</div>
+               <div class="kpi-sub">${c.sub}</div>
+             </div>`).join('');
+         }
+		 
+		 function renderActionCenter(){
+
+  let data = [];
+
+  if(actionTab === 'sla'){
+
+  data = stages.map(stage => {
+
+    let delayed = 0;
+
+    apps.forEach(a => {
+
+      if(a.rejected || a.currentStage !== stage) return;
+
+      const s = a.stages[stage];
+      if(!s || s.completedAt) return;
+
+      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+
+      if(d > 5) delayed++;
+
+    });
+
+    return {
+      stage,
+      within: 0,
+      delayed: delayed,
+      value: delayed
+    };
+
+  }).filter(d => d.value > 0);
+}
+
+  if(actionTab === 'pending'){
+
+  data = stages.map(stage => {
+
+    let within = 0;
+    let delayed = 0;
+
+    apps.forEach(a => {
+
+      if(a.rejected || a.currentStage !== stage) return;
+
+      const s = a.stages[stage];
+      if(!s || s.completedAt) return;
+
+      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+
+      if(d > 5){
+        delayed++;
+      } else {
+        within++;
+      }
+
+    });
+
+    return {
+      stage,
+      within,
+      delayed,
+      value: within + delayed
+    };
+
+  }).filter(d => d.value > 0);
+}
+if(actionTab === 'bottleneck'){
+  data = getBottlenecks().map(d => ({
+    stage: d.stage,
+    value: d.pending,
+    extra: Math.round(d.conversion * 100) + '% conv'
+  }));
+}
+
+if(actionTab === 'quick'){
+
+  data = stages.map(stage => {
+
+    let within = 0;
+    let delayed = 0;
+
+    apps.forEach(a => {
+
+      if(a.rejected || a.currentStage !== stage) return;
+
+      const s = a.stages[stage];
+      if(!s || s.completedAt) return;
+
+      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+
+      if(d > 5){
+        delayed++;
+      } else {
+        within++;
+      }
+
+    });
+
+    return {
+      stage,
+      within,
+      delayed,
+      value: within + delayed
+    };
+
+  })
+  .filter(d => d.value > 0 && d.value <= 5);
+}
+ 
+
+  // RENDER
+  document.getElementById('actionContent').innerHTML = `
+
+<!-- HEADER -->
+<div style="
+  display:grid;
+  grid-template-columns: 1fr 160px 160px 140px;
+  padding:8px 12px;
+  font-size:11px;
+  font-weight:600;
+  align-items:center;
+  color:#777;
+  border-bottom:1px solid #eee;
+">
+  <div>Stage</div>
+  <div>Within the Deadline</div>
+  <div>Delayed - Past the Deadline</div>
+  <div>Total</div>
+</div>
+
+${data.map(d => `
+
+<div style="
+  display:grid;
+  grid-template-columns: 1fr 140px 130px 140px;
+  padding:10px 12px;
+  border-bottom:1px solid #f1f1f1;
+  align-items:center;
+  cursor:pointer;
+" onclick="openStage('${d.stage}')">
+
+  <!-- Stage -->
+  <div>
+    <div style="font-weight:600;">${d.stage}</div>
+    <div style="font-size:11px;color:#007aaa;">
+      ${getActionText(d)}
+    </div>
+  </div>
+
+  <!-- Within -->
+  <div style="color:#2e7d32; font-weight:600;">
+    ${d.within || 0}
+  </div>
+
+  <!-- Delayed -->
+  <div style="color:#a4343a; font-weight:600;">
+    ${d.delayed || 0}
+  </div>
+
+  <!-- Total -->
+  <div style="font-weight:700;">
+    ${d.value}
+  </div>
+
+</div>
+
+`).join('')}
+`;
+
+}
+
+function getBottlenecks(){
+  return stages.map(stage => {
+    const cfg = funnelConfig[stage];
+
+    const total = cfg.approved + cfg.pending + cfg.rejected;
+    const conversion = total > 0 ? (cfg.approved / total) : 0;
+
+    return {
+      stage,
+      pending: cfg.pending,
+      conversion
+    };
+  })
+  .filter(s => s.pending > 5 && s.conversion < 0.6)
+  .sort((a,b)=>b.pending - a.pending);
+}
+         
+         function calculateForecast(){
+         
+           const total = apps.length;
+         
+           const completed = apps.filter(a => 
+             a.currentStage === "Reporting" && !a.rejected
+           ).length;
+         
+           const active = apps.filter(a => !a.rejected);
+         
+           const conversionRate = active.length > 0 
+             ? completed / active.length 
+             : 0;
+         
+           const forecast = Math.round(total * conversionRate);
+         
+           return {
+             forecast,
+             conversionRate: (conversionRate * 100).toFixed(1)
+           };
+         }
+         
+         let charts = {};
+         function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+         
+         function renderDonut(){
+           destroyChart('donut');
+         
+           const approved = apps.filter(a => 
+             a.currentStage === "Reporting" && !a.rejected
+           ).length;
+         
+           const pending = apps.filter(a => 
+             !a.rejected && a.currentStage !== "Reporting"
+           ).length;
+         
+           const rejected = apps.filter(a => a.rejected).length;
+         
+           charts['donut'] = new Chart(document.getElementById('donutChart'),{
+             type:'doughnut',
+             data:{
+               labels:['Completed','Pending','Rejected'],
+               datasets:[{ 
+                 data:[approved,pending,rejected],
+                 backgroundColor:['#2e7d32','#c07a00','#a4343a']
+               }]
+             },
+             options:{
+               responsive:true,
+               maintainAspectRatio:false
+             }
+           });
+         }
+         
+         function renderStackedBar(){
+           destroyChart('stacked');
+           const labels = stages.map((_,i)=>SHORT[i]);
+           const approved = stages.map(s=>funnelConfig[s].approved);
+           const pending  = stages.map(s=>funnelConfig[s].pending);
+           const rejected = stages.map(s=>funnelConfig[s].rejected);
+           charts['stacked'] = new Chart(document.getElementById('stackedBar'),{
+             type:'bar',
+             data:{
+               labels,
+               datasets:[
+                 { label:'Completed', data:approved, backgroundColor:'#2e7d32', borderRadius:2 },
+                 { label:'Pending',  data:pending,  backgroundColor:'#c07a00', borderRadius:2 },
+                 { label:'Rejected', data:rejected, backgroundColor:'#a4343a', borderRadius:2 }
+               ]
+             },
+             options:{
+               responsive:true, maintainAspectRatio:false,
+               scales:{
+                 x:{ stacked:true, ticks:{ font:{size:9} }, grid:{display:false} },
+                 y:{ stacked:true, ticks:{ font:{size:10} }, grid:{ color:'#f0f0f0' } }
+               },
+               plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, padding:10, boxWidth:12 } } }
+             }
+           });
+         }
+         
+         function renderDropChart(){
+           destroyChart('drop');
+         
+           const drops = stages.slice(1).map((stage, i)=>{
+         
+             const prevCount = apps.filter(a =>
+               !a.rejected && stages.indexOf(a.currentStage) >= i
+             ).length;
+         
+             const currCount = apps.filter(a =>
+               !a.rejected && stages.indexOf(a.currentStage) >= i+1
+             ).length;
+         
+             if(prevCount === 0) return 0;
+         
+             return +(((prevCount - currCount) / prevCount) * 100).toFixed(1);
+           });
+         
+           charts['drop'] = new Chart(document.getElementById('dropChart'),{
+             type:'bar',
+             data:{
+               labels: SHORT.slice(1),
+               datasets:[{
+                 label:'Drop-off %',
+                 data: drops,
+                 backgroundColor: drops.map(d => 
+                   d > 30 ? '#a4343a' : d > 15 ? '#c07a00' : '#0095C8'
+                 ),
+                 borderRadius:4
+               }]
+             },
+             options:{
+               responsive:true,
+               maintainAspectRatio:false,
+               scales:{ y:{ max:100 } },
+               plugins:{ legend:{display:false} }
+             }
+           });
+         }
+         
+         function renderLineChart(){
+           destroyChart('line');
+           const approved = stages.map(s=>funnelConfig[s].approved);
+           charts['line'] = new Chart(document.getElementById('lineChart'),{
+             type:'line',
+             data:{
+               labels: SHORT,
+               datasets:[{
+                 label:'Approved Count',
+                 data: approved,
+                 borderColor:'#0095C8',
+                 backgroundColor:'rgba(0,149,200,0.1)',
+                 borderWidth:2,
+                 pointBackgroundColor:'#0095C8',
+                 pointRadius:4,
+                 fill:true,
+                 tension:0.35
+               }]
+             },
+             options:{
+               responsive:true, maintainAspectRatio:false,
+               scales:{
+                 x:{ ticks:{font:{size:9}}, grid:{display:false} },
+                 y:{ ticks:{font:{size:10}}, grid:{color:'#f0f0f0'} }
+               },
+               plugins:{ legend:{display:false} }
+             }
+           });
+         }
+         
+         function renderHealthTable(){
+         
+           const rows = stages.map(stage=>{
+         
+             const total = apps.filter(a =>
+               !a.rejected && stages.indexOf(a.currentStage) >= stages.indexOf(stage)
+             ).length;
+         
+             const approved = apps.filter(a =>
+               !a.rejected &&
+               stages.indexOf(a.currentStage) > stages.indexOf(stage)
+             ).length;
+         
+             const pending = apps.filter(a =>
+               !a.rejected && a.currentStage === stage
+             ).length;
+         
+             const rejected = apps.filter(a =>
+               a.rejected && a.rejectedStage === stage
+             ).length;
+         
+             const approvalRate = total > 0 ? Math.round((approved/total)*100) : 0;
+         
+             const risk = rejected > 5 ? 'High' : rejected > 0 ? 'Medium' : 'Low';
+             const riskClass = risk==='High'?'pill-red':risk==='Medium'?'pill-amber':'pill-green';
+         
+             const barColor = approvalRate > 70 ? '#2e7d32' : approvalRate > 40 ? '#c07a00' : '#a4343a';
+         
+             return `<tr>
+               <td style="font-weight:600;">${stage}</td>
+               <td style="text-align:center;">${total}</td>
+               <td>
+                 <div style="display:flex;align-items:center;gap:8px;">
+                   <div class="mini-bar-wrap">
+                     <div class="mini-bar" style="width:${approvalRate}%;background:${barColor};"></div>
+                   </div>
+                   <span style="color:${barColor};">${approvalRate}%</span>
+                 </div>
+               </td>
+               <td style="text-align:center;color:#b06000;">${pending}</td>
+               <td style="text-align:center;color:#a4343a;">${rejected}</td>
+               <td style="text-align:center;"><span class="status-pill ${riskClass}">${risk}</span></td>
+             </tr>`;
+           });
+         
+           document.getElementById('healthTable').innerHTML = `
+             <thead>
+               <tr>
+                 <th>Stage</th>
+                 <th>Total In</th>
+                 <th>Approval Rate</th>
+                 <th>Pending</th>
+                 <th>Did Not Qualify</th>
+                 <th>Risk</th>
+               </tr>
+             </thead>
+             <tbody>${rows.join('')}</tbody>`;
+         }
+         
+         function renderPendingBar(){
+           destroyChart('pending');
+         
+           const pendingCounts = stages.map(stage => {
+  const pending = apps.filter(a =>
+    !a.rejected && a.currentStage === stage
+  ).length;
+
+  const breaches = apps.filter(a => {
+    const s = a.stages[stage];
+    if(!s || s.completedAt) return false;
+    const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+    return d > 5;
+  }).length;
+
+  return pending + (breaches * 2); // 🔥 weight breaches higher
+});
+         
+           charts['pending'] = new Chart(document.getElementById('pendingBar'),{
+             type:'bar',
+             data:{
+               labels: stages,
+               datasets:[{
+                 label:'Pending',
+                 data: pendingCounts,
+                 backgroundColor: pendingCounts.map(v =>
+                   v > 10 ? '#a4343a' : v > 5 ? '#c07a00' : '#0095C8'
+                 ),
+                 borderRadius:5
+               }]
+             },
+             options:{
+               responsive:true,
+               maintainAspectRatio:false,
+               plugins:{ legend:{display:false} },
+               scales:{
+                 x:{
+                   ticks:{ font:{size:9}, maxRotation:45, minRotation:45 },
+                   grid:{ display:false }
+                 },
+                 y:{
+                   ticks:{ font:{size:10} },
+                   grid:{ color:'#f0f0f0' }
+                 }
+               }
+             }
+           });
+         }
+         
+         
+         function renderSLARisk(){
+         
+           destroyChart('sla');
+         
+           const breachCounts = stages.map(stage => {
+             return apps.filter(a => {
+         
+               if(a.rejected) return false;
+         
+               const s = a.stages[stage];
+               if(!s || s.completedAt) return false;
+         
+               const days = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         
+               return days > 5;
+             }).length;
+           });
+         
+           charts['sla'] = new Chart(document.getElementById('slaChart'),{
+             type:'bar',
+             data:{
+               labels: stages,
+               datasets:[{
+                 label:'SLA Breaches',
+                 data: breachCounts,
+                 backgroundColor: breachCounts.map(v =>
+                   v > 10 ? '#a4343a' : v > 5 ? '#c07a00' : '#2e7d32'
+                 ),
+                 borderRadius:5
+               }]
+             },
+             options:{
+               responsive:true,
+               maintainAspectRatio:false,
+               plugins:{ legend:{display:false} },
+               scales:{
+                 x:{
+                   ticks:{ font:{size:9}, maxRotation:45, minRotation:45 },
+                   grid:{ display:false }
+                 },
+                 y:{
+                   ticks:{ font:{size:10} },
+                   grid:{ color:'#f0f0f0' }
+                 }
+               }
+             }
+           });
+         }
+         
+         /* ═══════════════════════════════════════
+            DATA INIT
+         ═══════════════════════════════════════ */
+         function generateFunnel(){
+         
+           let currentPool = [...apps];
+         
+           stages.forEach((stage, index) => {
+         
+             let config = funnelConfig[stage];
+             let nextPool = [];
+         
+             let approvedCount = config.approved;
+             let pendingCount = config.pending;
+             let rejectedCount = config.rejected;
+         
+             let i = 0;
+         
+             currentPool.forEach(app => {
+         
+               if(i < approvedCount){
+                 app.funnel[stage] = 'approved';
+                 nextPool.push(app); // moves forward
+               }
+               else if(i < approvedCount + pendingCount){
+                 app.funnel[stage] = 'pending';
+                 nextPool.push(app); // stays active
+               }
+               else if(stage !== "Interest" && i < approvedCount + pendingCount + rejectedCount){
+                 app.funnel[stage] = 'rejected';
+                 app.rejected = true;
+                 app.rejectedStage = stage;
+                 app.rejectionReason = "Did not meet criteria";
+               }
+         
+               i++;
+             });
+         
+             currentPool = nextPool; // only approved + pending continue
+           });
+         }
+         
+         function initStageData(){
+           apps.forEach(app=>{
+             let furthest='Interest';
+             stages.forEach(s=>{if(app.funnel[s]==='approved'||app.funnel[s]==='pending') furthest=s;});
+             app.currentStage=app.rejected?app.rejectedStage:furthest;
+             let reached=false;
+             stages.forEach(stage=>{
+               if(reached) return;
+               const dAgo=Math.floor(Math.random()*20)+1;
+               const startedAt=new Date(Date.now()-dAgo*86400000);
+               if(stage===app.currentStage){
+                 reached=true;
+                 app.stages[stage]={startedAt,completedAt:null,tasks:(stageTasks[stage]||[]).map(t=>({name:t,done:false}))};
+               } else {
+                 app.stages[stage]={startedAt,completedAt:new Date(startedAt.getTime()+2*86400000),tasks:(stageTasks[stage]||[]).map(t=>({name:t,done:true}))};
+               }
+             });
+           });
+         }
+         
+         function recalculateFunnel(){
+         
+           // reset all counts
+           stages.forEach(stage=>{
+             funnelConfig[stage] = { approved:0, pending:0, rejected:0 };
+           });
+         
+           apps.forEach(app=>{
+         
+             stages.forEach(stage=>{
+         
+               const status = getStatus(app, stage);
+               if(!status) return;
+         
+               if(status === 'completed' || status === 'approved'){
+                 funnelConfig[stage].approved++;
+               }
+               else if(status === 'pending'){
+                 funnelConfig[stage].pending++;
+               }
+               else if(status === 'rejected'){
+                 funnelConfig[stage].rejected++;
+               }
+         
+             });
+         
+           });
+         }
+         
+         function getStatus(a,stage){
+         
+           // Rejected case
+           if(a.rejected && a.rejectedStage === stage) return 'rejected';
+         
+           // INTEREST STAGE (SPECIAL RULE)
+           if(stage === "Interest"){
+             return 'completed'; // nothing is completed here
+           }
+         
+           // If stage is ahead of current → DO NOT SHOW
+           if(stages.indexOf(stage) > stages.indexOf(a.currentStage)){
+             return null; // important
+           }
+         
+           const s = a.stages[stage];
+           if(!s) return null;
+         
+           if(s.completedAt) return 'completed';
+         
+           if(s.tasks && s.tasks.every(t => t.done)) return 'completed';
+         
+           const days = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+           return 'pending';
+         }
+         
+         /* ═══════════════════════════════════════
+            NAVIGATION
+         ═══════════════════════════════════════ */
+         function openStage(stage){
+           currentStage=stage; filter='all';
+           document.getElementById('dashboardScreen').style.display='none';
+           document.getElementById('flowScreen').style.display='block';
+           document.getElementById('flowTitle').textContent=stage;
+           renderAll();
+         }
+         function goBack(){
+           document.getElementById('flowScreen').style.display='none';
+           document.getElementById('dashboardScreen').style.display='block';
+           closePanel();
+         }
+         
+         function renderPipeline(){
+         
+           document.getElementById('pipeline').innerHTML = stages.map((s, i) => {
+         
+             let total, approved, pending, rejected;
+         
+             if(s === "Interest"){
+               total = 110;
+               approved = 110;
+               pending = 0;
+               rejected = 0;
+             } else {
+               const cfg = funnelConfig[s];
+               total = cfg.approved + cfg.pending + cfg.rejected;
+               approved = cfg.approved;
+               pending = cfg.pending;
+               rejected = cfg.rejected;
+             }
+         
+             return `
+               <div style="display:flex;align-items:center;gap:8px;">
+         
+                 <div class="sp-card ${s===currentStage?'active':''}" onclick="switchStage('${s}')">
+                   <div class="sp-title">${s}</div>
+                   <div class="sp-total">${total}</div>
+         
+                   <div class="sp-row">
+                     <span class="ok">✔ ${approved}</span>
+                     <span class="wait">⏳ ${pending}</span>
+                     <span class="bad">✖ ${rejected}</span>
+                   </div>
+                 </div>
+         
+                 ${i !== stages.length - 1 ? `
+                   <div style="
+                     display:flex;
+                     align-items:center;
+                     justify-content:center;
+                     font-size:18px;
+                     color:#999;
+                     height:100%;
+                   ">
+                     ➝
+                   </div>
+                 ` : ''}
+         
+               </div>
+             `;
+           }).join('');
+         }
+         
+         function renderCollapsedPipeline(){
+         
+           document.getElementById("collapsedPipeline").innerHTML = stages.map((s, i) => {
+         
+             const cfg = funnelConfig[s];
+             const total = cfg.approved + cfg.pending + cfg.rejected;
+         
+             return `
+               <div style="display:flex;align-items:center;gap:8px;">
+         
+                 <div class="sp-card ${s===currentStage?'active':''}" onclick="openStage('${s}')">
+                   <div class="sp-title">${s}</div>
+                   <div class="sp-total">${total}</div>
+         
+                   <div class="sp-row">
+                     <span class="ok">✔ ${cfg.approved}</span>
+                     <span class="wait">⏳ ${cfg.pending}</span>
+                     <span class="bad">✖ ${cfg.rejected}</span>
+                   </div>
+                 </div>
+         
+                 ${i !== stages.length - 1 ? `
+                   <div style="
+                     display:flex;
+                     align-items:center;
+                     justify-content:center;
+                     font-size:18px;
+                     color:#999;
+                   ">
+                     ➝
+                   </div>
+                 ` : ''}
+         
+               </div>
+             `;
+           }).join('');
+         }
+         
+         function switchStage(s){ 
+           currentStage = s; 
+           filter = 'all'; 
+           document.getElementById('flowTitle').textContent = s;
+           renderAll(); 
+         }
+         
+         function renderTabs(){
+           const counts={
+             all:apps.length,
+             pending_in: apps.filter(a => {
+         		const sd = a.stages[currentStage];
+         		if (!sd) return false;
+         		const d = Math.ceil((Date.now() - new Date(sd.startedAt))/86400000);
+         		return d <= 5 && getStatus(a,currentStage)==='pending';
+         	}).length,
+         
+         	pending_out: apps.filter(a => {
+         		const sd = a.stages[currentStage];
+         		if (!sd) return false;
+         		const d = Math.ceil((Date.now() - new Date(sd.startedAt))/86400000);
+         		return d > 5 && getStatus(a,currentStage)==='pending';
+         	}).length,
+         	
+             completed:apps.filter(a=>getStatus(a,currentStage)==='completed').length,
+             overdue:apps.filter(a=>getStatus(a,currentStage)==='overdue').length,
+             rejected: apps.filter(a => a.rejectedStage === currentStage).length
+           };
+           document.getElementById('tabs').innerHTML = [
+           ['all','All Applications'],
+           ['pending_in','In Progress (Within SLA)'],
+           ['pending_out','Delayed (Out of SLA)'],
+           ['completed','Applications Completed'],
+           ['rejected','Applications Not Passed']
+         ].map(([f,l])=>`
+           <div class="tab ${filter===f?'active':''}" onclick="setFilter('${f}')">
+             <span class="tab-text">${l}</span>
+             <span class="tab-badge">${counts[f] || 0}</span>
+           </div>
+         `).join('');
+         animateCounts();
+         }
+         function setFilter(f){ filter=f; renderTable(); renderTabs(); }
+         
+         function renderTable(){
+			let rows = apps.filter(a => (selectedProgram === "all" || a.program === selectedProgram));
+		// 🔹 ALL APPLICATIONS TAB
+		 // 🔹 ALL APPLICATIONS TAB (FIXED)
+if (filter === 'all') {
+  rows = apps.filter(a => 
+    (selectedProgram === "all" || a.program === selectedProgram) &&
+    (
+      stages.indexOf(a.currentStage) >= stages.indexOf(currentStage) ||
+      a.rejectedStage === currentStage
+    )
+  );
+}
+// 🔹 COMPLETED TAB
+if (filter === 'completed') {
+  rows = apps.filter(a => 
+    (selectedProgram === "all" || a.program === selectedProgram) &&
+    !a.rejected &&
+    stages.indexOf(a.currentStage) > stages.indexOf(currentStage)
+  );
+}
+         // 🔹 Pending within SLA
+         if (filter === 'pending_in') {
+           rows = apps.filter(a => {
+             if (!(selectedProgram === "all" || a.program === selectedProgram)) return false;
+         
+             const sd = a.stages[currentStage];
+             if (!sd) return false;
+         
+             const days = Math.ceil((Date.now() - new Date(sd.startedAt)) / 86400000);
+         
+             return days <= 5 && getStatus(a, currentStage) === 'pending';
+           });
+         }
+         
+         // 🔹 Pending out of SLA
+         if (filter === 'pending_out') {
+           rows = apps.filter(a => {
+             if (!(selectedProgram === "all" || a.program === selectedProgram)) return false;
+         
+             const sd = a.stages[currentStage];
+             if (!sd) return false;
+         
+             const days = Math.ceil((Date.now() - new Date(sd.startedAt)) / 86400000);
+         
+             return days > 5 && getStatus(a, currentStage) === 'pending';
+           });
+         }
+         
+           // FILTER FIRST
+         if (filter === 'rejected') {
+           rows = apps.filter(a =>
+             (selectedProgram === "all" || a.program === selectedProgram) &&
+             a.rejectedStage === currentStage
+           );
+         }
+         
+         // SORT AFTER FILTER
+         rows = rows.sort((a, b) => {
+         
+           const getPriority = (app) => {
+             const st = getStatus(app, currentStage);
+         
+             if (st === 'pending') {
+               const sd = app.stages[currentStage];
+               const d = sd ? Math.ceil((Date.now() - new Date(sd.startedAt)) / 86400000) : 0;
+         
+               if (d > 5) return 0; // overdue first
+               return 1;
+             }
+         
+             if (st === 'completed') return 2;
+             if (st === 'rejected') return 3;
+         
+             return 4;
+           };
+         
+           return getPriority(a) - getPriority(b);
+         });
+           document.getElementById('tableBody').innerHTML=rows.map(a=>{
+             const sd=a.stages[currentStage], st=getStatus(a,currentStage);
+             const startDate=sd?new Date(sd.startedAt).toLocaleDateString():'-';
+             const endDate=sd&&sd.completedAt?new Date(sd.completedAt).toLocaleDateString():'-';
+             let sla='-';
+             if(sd && !sd.completedAt && !a.rejected){
+           const d = Math.ceil((Date.now() - new Date(sd.startedAt))/86400000);
+         
+           if(d > 5){
+         	sla = `<span class="sla-breach">${d - 5}d</span>`;  } else {
+             sla = `<span class="sla-ok">0d</span>`;
+           }
+         }
+             const isOverdue = sd && !sd.completedAt && Math.ceil((Date.now() - new Date(sd.startedAt))/86400000) > 5;
+         	return `<tr class="${isOverdue ? 'row-overdue' : ''}" onclick="openPanel(${a.id})">
+               <td>${a.name}</td><td>${a.currentStage}</td>
+              <td><span class="badge ${st}">
+           ${
+             st === 'pending'   ? currentStage + ' In Progress' :
+             st === 'completed' ? currentStage + ' Completed' :
+             st === 'rejected'  ? currentStage + ' Not Passed' : st
+           }
+         </span></td>
+         
+               <td>${startDate}</td><td>${endDate}</td><td>${sla}</td>
+               <td>${sd?sd.tasks.filter(t=>!t.done).length:'-'}</td>
+               <td style="font-size:11px;color:#999;">
+           ${
+             a.rejected && a.rejectedStage === currentStage
+               ? a.rejectionReason
+               : '-'
+           }
+         </td>
+             </tr>`;
+           }).join('');
+         }
+         
+         function openPanel(id){
+           selectedApp=apps.find(a=>a.id===id);
+           if(!selectedApp) return;
+           document.getElementById('panel').style.display='block';
+           document.getElementById('pName').textContent=selectedApp.name;
+           const COLORS={completed:'#2e7d32',pending:'#b06000',overdue:'#a4343a',rejected:'#555','not-started':'#bbb'};
+           let html='<div style="font-size:13px;font-weight:600;margin-bottom:12px;color:#333;">Lifecycle Progress</div>';
+           stages.forEach(stage=>{
+             const s=selectedApp.stages[stage]; if(!s) return;
+             const st=getStatus(selectedApp,stage);
+             html+=`<div style="margin-bottom:7px;padding:9px 11px;border-left:3px solid ${COLORS[st]||'#ccc'};background:#f8f9fa;border-radius:0 6px 6px 0;">
+               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                 <b style="font-size:12px;">${stage}</b><span class="badge ${st}">${st}</span>
+               </div>
+               <div style="font-size:11px;color:#888;">Start: ${new Date(s.startedAt).toLocaleDateString()}${s.completedAt?` · End: ${new Date(s.completedAt).toLocaleDateString()}`:''}</div>
+               <div style="margin-top:5px;">${s.tasks.map(t=>`<div style="font-size:11px;padding:1px 0;">${t.done?'<span style="color:#2e7d32;">✔</span>':'<span style="color:#b06000;">⏳</span>'} ${t.name}</div>`).join('')}</div>
+             </div>`;
+           });
+           document.getElementById('details').innerHTML=html;
+           const cur=selectedApp.stages[selectedApp.currentStage];
+           let footer='';
+           if(selectedApp.rejected){
+             footer=`<div style="color:var(--red);font-size:12px;">⚠ Rejected at <b>${selectedApp.rejectedStage}</b>: ${selectedApp.rejectionReason}</div>`;
+           } else if(cur&&!cur.completedAt&&selectedApp.currentStage===currentStage){
+             const allDone=cur.tasks.every(t=>t.done);
+             footer=cur.tasks.map((t,i)=>`
+               <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;">
+                 <span>${t.done?'✔':'⏳'}</span><span style="flex:1;">${t.name}</span>
+                 ${!t.done?`<button onclick="completeTask(${i})" style="padding:2px 8px;font-size:11px;margin:0;">Done</button>`:''}
+               </div>`).join('')+
+               `<div style="display:flex;gap:8px;margin-top:10px;">
+                 <button class="btn-red" style="margin:0;" onclick="rejectApp()">✕ Reject</button>
+                 <button style="flex:1;margin:0;" ${!allDone?'disabled':''} onclick="confirmMove()">Move to Next Stage →</button>
+               </div>`;
+           }
+           document.getElementById('actions').innerHTML=footer;
+         }
+         function closePanel(){ document.getElementById('panel').style.display='none'; selectedApp=null; }
+         
+         function completeTask(i){
+           selectedApp.stages[selectedApp.currentStage].tasks[i].done = true;
+         
+           // optional but safe
+           recalculateFunnel();
+         
+           openPanel(selectedApp.id);
+           renderAll();
+         }
+         function moveNext(){
+           const app = selectedApp;
+           const s = app.stages[app.currentStage];
+         
+           if(!s || s.tasks.some(t=>!t.done)) return;
+         
+           // mark current stage completed
+           s.completedAt = new Date();
+         
+           const next = stages[stages.indexOf(app.currentStage)+1];
+           if(!next) return;
+         
+           app.currentStage = next;
+         
+           app.stages[next] = {
+             startedAt: new Date(),
+             completedAt: null,
+             tasks: (stageTasks[next]||[]).map(t=>({name:t,done:false}))
+           };
+         
+           closePanel();
+         
+           // 🔥 KEY FIX
+           recalculateFunnel();
+         
+           renderFunnel();
+           renderReporting();
+           renderAll();
+         }
+         function rejectApp(){
+           const r = prompt('Enter rejection reason:');
+           if(!r) return;
+         
+           selectedApp.rejected = true;
+           selectedApp.rejectedStage = selectedApp.currentStage;
+           selectedApp.rejectionReason = r;
+         
+           closePanel();
+         
+           // 🔥 KEY FIX
+           recalculateFunnel();
+         
+           renderFunnel();
+           renderReporting();
+           renderAll();
+         }
+         function confirmMove(){ pendingAction='move'; document.getElementById('modal').style.display='flex'; }
+         function proceedMove(){
+           document.getElementById('modal').style.display='none';
+           if(pendingAction==='move') moveNext();
+           pendingAction=null;
+         }
+         function animateCounts() {
+           document.querySelectorAll('.tab-badge').forEach(el => {
+             let target = parseInt(el.innerText) || 0;
+             let count = 0;
+         
+             let step = Math.ceil(target / 15);
+         
+             let interval = setInterval(() => {
+               count += step;
+               if (count >= target) {
+                 el.innerText = target;
+                 clearInterval(interval);
+               } else {
+                 el.innerText = count;
+               }
+             }, 25);
+           });
+         }
+         
+         function exportToCSV(){
+         
+           let rows = [
+             ["Name","Stage","Status","Start Date","End Date","Rejected","Reason"]
+           ];
+         
+           apps.forEach(a => {
+         
+             const s = a.stages[a.currentStage];
+         
+             rows.push([
+               a.name,
+               a.currentStage,
+               a.rejected ? "Rejected" : "Active",
+               s ? new Date(s.startedAt).toLocaleDateString() : "",
+               s && s.completedAt ? new Date(s.completedAt).toLocaleDateString() : "",
+               a.rejected ? "Yes" : "No",
+               a.rejectionReason || ""
+             ]);
+           });
+         
+           let csvContent = "data:text/csv;charset=utf-8," 
+             + rows.map(e => e.join(",")).join("\n");
+         
+           const link = document.createElement("a");
+           link.setAttribute("href", encodeURI(csvContent));
+           link.setAttribute("download", "dashboard_data.csv");
+           document.body.appendChild(link);
+           link.click();
+         }
+         
+         let selectedProgram = "all";
+         
+         
+         let funnelCollapsed = true;
+         
+         function toggleFunnel(){
+         
+           const funnel = document.getElementById("funnelOuter");
+           const collapsed = document.getElementById("collapsedFlow");
+           const btn = document.querySelector(".funnel-toggle-btn");
+         
+           if(funnelCollapsed){
+             // EXPAND → show funnel
+             funnel.style.display = "block";
+             collapsed.style.display = "none";
+             btn.innerText = "Collapse";
+           } else {
+             // COLLAPSE → show pipeline
+             funnel.style.display = "none";
+             collapsed.style.display = "block";
+         
+             // render pipeline inside collapsed view
+             renderCollapsedPipeline();
+         
+             btn.innerText = "Expand";
+           }
+         
+           funnelCollapsed = !funnelCollapsed;
+         }
+         function filterProgram(val) {
+           selectedProgram = val;
+           renderAll();  // re-render everything with the new filter
+         }
+		 
+		 function getQuickWins(){
+  return stages.map(stage => {
+
+    const breaches = apps.filter(a => {
+      const s = a.stages[stage];
+      if(!s || s.completedAt) return false;
+      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+      return d > 5;
+    }).length;
+
+    const pending = apps.filter(a =>
+      !a.rejected && a.currentStage === stage
+    ).length;
+
+    return { stage, breaches, pending };
+
+  })
+  .filter(s => s.breaches > 0 && s.pending < 5)
+  .sort((a,b)=>b.breaches-a.breaches);
+}
+         
+         function renderAll(){ renderPipeline(); renderTabs(); renderTable(); }
+		 
+		 let actionCollapsed = false;
+
+function toggleActionCenter(){
+
+  const body = document.getElementById('actionBody');
+  const icon = document.getElementById('actionToggleIcon');
+
+  if(actionCollapsed){
+    body.style.maxHeight = '500px';   // expand
+    icon.innerText = '▼';
+  } else {
+    body.style.maxHeight = '0px';     // collapse
+    icon.innerText = '▲';
+  }
+
+  actionCollapsed = !actionCollapsed;
+}
+
+function getActionText(d){
+
+  if(actionTab === 'pending'){
+    return `Action: Focus on clearing backlog`;
+  }
+
+  if(actionTab === 'sla'){
+    return `Action: Resolve delayed cases immediately`;
+  }
+
+  if(actionTab === 'bottleneck'){
+    return `Action: Add capacity / investigate drop`;
+  }
+
+  if(actionTab === 'quick'){
+    return `Action: Quick fix possible`;
+  }
+
+  return '';
+}
+         
+         
+         /* ═══════════════════════════════════════
+            INIT
+         ═══════════════════════════════════════ */
+         generateFunnel();
+         initStageData();
+         recalculateFunnel();
+         renderFunnel();
+         renderReporting();
+         document.getElementById("funnelOuter").style.display = "none";
+         document.getElementById("collapsedFlow").style.display = "block";
+         renderCollapsedPipeline();
+      </script>
+   </body>
+</html>	
