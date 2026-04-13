@@ -2147,13 +2147,8 @@
          return '';
          }
          
-         function openApplicantPage(appId){
-
-  const app = apps.find(a => a.id === appId);
-
-  const data = encodeURIComponent(JSON.stringify(app));
-
-  window.open(`applicant.html?data=${data}`, '_blank');
+         function openApplicantPage(appId) {
+  window.open(`applicant-lookup.html?appId=${appId}`, '_blank');
 }
          /* ═══════════════════════════════════════
             INIT

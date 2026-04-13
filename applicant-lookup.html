@@ -251,17 +251,50 @@ const funnelConfig = {
    TO ADD REAL NAMES: change "Applicant "+(i+1)
    to your real family names array
 ═══════════════════════════════════════ */
-let apps = Array.from({length:110}, (_,i) => ({
-  id: i,
-  name: "Applicant " + (i+1),
-  /* 🔴 TO USE REAL NAMES, replace the line above with:
-     name: realNames[i] || "Applicant " + (i+1),
-     And add: const realNames = ["Smith Family","Jones Family",...]; at the top */
-  program: i % 2 === 0 ? "A" : "B",
-  currentStage: "Interest",
-  rejected: false, rejectedStage: null, rejectionReason: null,
-  funnel: {}, stages: {}
-}));
+let apps = [];
+
+function cloneData(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function buildFallbackData() {
+  apps = Array.from({ length: 110 }, (_, i) => ({
+    id: i,
+    name: `Applicant ${i + 1}`,
+    program: i % 2 === 0 ? "A" : "B",
+    currentStage: "Interest",
+    rejected: false,
+    rejectedStage: null,
+    rejectionReason: null,
+    funnel: {},
+    stages: {}
+  }));
+
+
+}
+
+function loadSharedApps() {
+  try {
+    if (window.opener && !window.opener.closed && window.opener.apps) {
+      apps = cloneData(window.opener.apps);
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+const startupAppId = getAppIdFromUrl();
+if (startupAppId !== null) {
+  const found = apps.find(a => a.id === startupAppId);
+  if (found) {
+    showResult(found);
+    document.getElementById("resultArea").style.display = "block";
+  }
+}
+
+if (!loadSharedApps()) {
+  buildFallbackData();
+}
 
 function generateFunnel(){
   let pool = [...apps];
@@ -270,13 +303,37 @@ function generateFunnel(){
     const {approved,pending,rejected} = funnelConfig[stage];
     let c = 0, next = [];
     pool.forEach(a => {
-      if(c < approved)              { a.funnel[stage]='approved'; next.push(a); }
-      else if(c < approved+pending) { a.funnel[stage]='pending';  next.push(a); }
-      else { a.funnel[stage]='rejected'; a.rejected=true; a.rejectedStage=stage; a.rejectionReason="Did not meet criteria"; }
-      c++;
-    });
+  if(c < approved){
+    a.funnel[stage]='approved';
+    next.push(a);
+  }
+  else if(c < approved+pending){
+    a.funnel[stage]='pending';
+    next.push(a);
+  }
+  else {
+    a.funnel[stage]='rejected';
+
+    // ✅ IMPORTANT FIX
+    if(!a.rejected){
+      a.rejected = true;
+      a.rejectedStage = stage;
+      a.rejectionReason = "Did not meet criteria";
+    }
+
+    // ❌ DO NOT push to next → stops progression
+    return;
+  }
+  c++;
+});
     pool = next;
   });
+}
+
+function getAppIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const val = params.get("appId");
+  return val !== null ? parseInt(val, 10) : null;
 }
 
 function initStageData(){
@@ -286,8 +343,19 @@ function initStageData(){
 
   apps.forEach(app => {
     let furthest = "Interest";
-    allStages.forEach(s => { if(app.funnel[s]==='approved'||app.funnel[s]==='pending') furthest=s; });
-    app.currentStage = app.rejected ? app.rejectedStage : furthest;
+    for (let s of allStages) {
+		if (app.funnel[s] === 'approved') {
+			furthest = s;
+		} 
+		else if (app.funnel[s] === 'pending') {
+			furthest = s;
+			break;   // 🔥 THIS IS THE FIX
+		} 
+		else {
+			break;
+		}
+}
+    app.currentStage = furthest;
     let reached = false;
     allStages.forEach(stage => {
       if(reached) return;
@@ -310,6 +378,7 @@ initStageData();
    SEARCH
 ═══════════════════════════════════════ */
 function doSearch(){
+refreshAppsFromOpener();
   const raw = document.getElementById('searchInput').value.trim().toLowerCase();
   if(!raw){ return; }
 
@@ -330,6 +399,14 @@ function doSearch(){
   }
   errEl.style.display = 'none';
   showResult(found);
+}
+
+function refreshAppsFromOpener() {
+  try {
+    if (window.opener && !window.opener.closed && window.opener.apps) {
+      apps = cloneData(window.opener.apps);
+    }
+  } catch (e) {}
 }
 
 /* ═══════════════════════════════════════
@@ -354,7 +431,8 @@ function getPhaseStatus(app, phaseEntry){
 }
 
 function showResult(app){
-  const area = document.getElementById('resultArea');
+  
+  const area = document.getElementById('resultArea');	
   area.style.display = 'block';
 
   const trackId = 'DFCP-' + String(app.id+1000).padStart(4,'0');
@@ -362,13 +440,33 @@ function showResult(app){
   const phaseStatuses = phaseMap.map(p=>getPhaseStatus(app,p));
   const curStageData = app.stages[app.currentStage];
 
-  let statusIcon='⏳', statusText='In Progress', statusCls='badge-active';
-  if(app.rejected){ statusIcon='✖'; statusText='Application Not Passed'; statusCls='badge-rejected'; }
-  else if(app.currentStage==='Reporting'){ statusIcon='🎉'; statusText='Completed'; statusCls='badge-done'; }
-  else if(curStageData&&!curStageData.completedAt){
-    const d=Math.ceil((Date.now()-new Date(curStageData.startedAt))/86400000);
-    if(d>5){ statusIcon='⚠'; statusText='Action Needed — Past Due'; statusCls='badge-pastdue'; }
-  }
+  let statusIcon = "⏳", statusText = "In Progress", statusCls = "badge-active";
+
+const s = app.stages[app.currentStage];
+const isCurrentStageRejected = app.rejected && app.currentStage === app.rejectedStage;
+const isCompleted = app.currentStage === "Reporting" && s && s.completedAt;
+const daysOpen = s && !s.completedAt
+  ? Math.ceil((Date.now() - new Date(s.startedAt)) / 86400000)
+  : 0;
+const isPastDue = s && !s.completedAt && daysOpen > 5;
+
+if (isCurrentStageRejected) {
+  statusIcon = "✖";
+  statusText = "Application Not Passed";
+  statusCls = "badge-rejected";
+} else if (isCompleted) {
+  statusIcon = "✔";
+  statusText = "Completed";
+  statusCls = "badge-done";
+} else if (isPastDue) {
+  statusIcon = "⚠";
+  statusText = "Action Needed / Past Due";
+  statusCls = "badge-pastdue";
+} else {
+  statusIcon = "⏳";
+  statusText = "In Progress";
+  statusCls = "badge-active";
+}
 
   /* Stage rows */
   const curIdx = allStages.indexOf(app.currentStage);
@@ -460,15 +558,7 @@ function showResult(app){
           <div class="action-title">What You Need To Do</div>
           <div class="action-text">${curPhase.action}</div>
         </div>
-        ${curStageData&&!curStageData.completedAt?`
-        <div style="margin-top:16px;">
-          <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Tasks at this stage</div>
-          ${(curStageData.tasks||[]).map(t=>`
-            <div class="task-item" style="margin-bottom:7px;font-size:13px;">
-              <span style="color:${t.done?'#2e7d32':'#b06000'};font-size:15px;">${t.done?'✔':'○'}</span>
-              <span style="color:${t.done?'#2e7d32':'#555'}">${t.name}</span>
-            </div>`).join('')}
-        </div>`:''}
+        
       </div>
     </div>
 
@@ -483,10 +573,11 @@ function showResult(app){
       </div>
       <div class="card-body">
         ${stageRows}
-        ${app.rejected?`<div style="margin-top:12px;padding:12px;background:#fdecea;border-radius:8px;border-left:3px solid #a4343a;">
+        ${app.rejected?`
+		  <!--<div style="margin-top:12px;padding:12px;background:#fdecea;border-radius:8px;border-left:3px solid #a4343a;">
           <div style="font-size:12px;font-weight:700;color:#a4343a;">Application Not Passed</div>
           <div style="font-size:12px;color:#7a2020;margin-top:4px;">Reason: ${app.rejectionReason||'Did not meet criteria'}</div>
-          <div style="font-size:12px;color:#555;margin-top:6px;">Please contact us if you have questions about this decision.</div>
+          <div style="font-size:12px;color:#555;margin-top:6px;">Please contact us if you have questions about this decision.</div>-->
         </div>`:''}
       </div>
     </div>
