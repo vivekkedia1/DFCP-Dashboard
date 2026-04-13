@@ -565,18 +565,17 @@
          .row-overdue td {
          background: #fff5f5 !important;
          }
-		 .action-header {
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.action-body {
-  max-height: 500px;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
+         .action-header {
+         cursor: pointer;
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         }
+         .action-body {
+         max-height: 500px;
+         overflow: hidden;
+         transition: max-height 0.3s ease;
+         }
       </style>
    </head>
    <body>
@@ -593,12 +592,17 @@
          <div class="topbar">
             &#127968; DFCP Lifecycle Dashboard
             <button onclick="exportToCSV()">Export Data</button>
+			<a href="applicant-lookup.html" target="_blank"
+  style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);
+  color:white;padding:5px 12px;border-radius:5px;text-decoration:none;font-size:13px;">
+  Applicant Portal
+</a>
             <!--<select onchange="filterProgram(this.value)" style="margin-left:20px;padding:5px;border-radius:5px;">
-              <option value="all">All Programs</option>
-               <option value="A">Program A</option>
-               <option value="B">Program B</option>
-               
-            </select>-->
+               <option value="all">All Programs</option>
+                <option value="A">Program A</option>
+                <option value="B">Program B</option>
+                
+               </select>-->
          </div>
          <!-- FUNNEL (unchanged) -->
          <div style="padding:16px 20px 6px; font-size:13px; color:#555; font-weight:500; display:flex; justify-content:space-between; align-items:center;">
@@ -617,101 +621,94 @@
          <div class="report-section">
             <!-- KPI CARDS -->
             <div class="report-section-title">&#128200; Leadership Summary <span>Real-time overview</span></div>
-			<div class="chart-card">
-
-  <!-- HEADER -->
-  <div class="chart-title action-header" style="font-size:20px; font-weight:700;" onclick="toggleActionCenter()">
-    <span>⚠ Action Center</span>
-    <span id="actionToggleIcon">▼</span>
-  </div>
-
-  <!-- BODY -->
-  <div id="actionBody" class="action-body">
-
-    <div style="display:flex; gap:12px; margin-bottom:12px;">
-      <div class="tab active" onclick="switchActionTab('sla')">SLA Breach</div>
-      <div class="tab" onclick="switchActionTab('pending')">Pending by Stage</div>
-      <!--<div class="tab" onclick="switchActionTab('bottleneck')">Bottlenecks</div>-->
-      <div class="tab" onclick="switchActionTab('quick')">Quick Wins</div>
-    </div>
-
-    <div id="actionContent"style="max-height:320px; overflow-y:auto;"></div>
-
-  </div>
-
-</div>
-
-  <!-- Content -->
-  <div id="actionContent"></div>
-</div>
-            <div class="kpi-row" id="kpiRow"></div>
-            <!-- ROW 1: Donut + Bar -->
-            <div class="chart-grid">
-               <div class="chart-card">
-                  <div class="chart-title">
-                     Overall Status Distribution 
-                     <div class="chart-subtitle">All 110 applications across all stages</div>
-                  </div>
-                  <div class="chart-wrap" style="height:220px;display:flex;align-items:center;justify-content:center;">
-                     <canvas id="donutChart"></canvas>
-                  </div>
+            <div class="chart-card">
+               <!-- HEADER -->
+               <div class="chart-title action-header" style="font-size:20px; font-weight:700;" onclick="toggleActionCenter()">
+                  <span>⚠ Action Center</span>
+                  <span id="actionToggleIcon">▼</span>
                </div>
-               <div class="chart-card">
-                  <div class="chart-title">
-                     Approved vs Pending vs Rejected by Stage 
-                     <div class="chart-subtitle">Count per lifecycle stage</div>
+               <!-- BODY -->
+               <div id="actionBody" class="action-body">
+                  <div style="display:flex; gap:12px; margin-bottom:12px;">
+                     <div class="tab active" onclick="switchActionTab('sla')">Past Due</div>
+                     <div class="tab" onclick="switchActionTab('pending')">Pending by Stage</div>
+                     <!--<div class="tab" onclick="switchActionTab('bottleneck')">Bottlenecks</div>-->
+                     <div class="tab" onclick="switchActionTab('quick')">Quick Wins</div>
                   </div>
-                  <div class="chart-wrap" style="height:220px;">
-                     <canvas id="stackedBar"></canvas>
-                  </div>
+                  <div id="actionContent"style="max-height:320px; overflow-y:auto;"></div>
                </div>
             </div>
-            <!-- ROW 2: Funnel drop-off + Pipeline velocity -->
-            <div class="chart-grid" style="display:none;">
-               <div class="chart-card">
-                  <div class="chart-title">
-                     Funnel Drop-off Rate 
-                     <div class="chart-subtitle">% of applicants lost at each stage</div>
-                  </div>
-                  <div class="chart-wrap" style="height:220px;">
-                     <canvas id="dropChart"></canvas>
-                  </div>
-               </div>
-               <div class="chart-card">
-                  <div class="chart-title">
-                     Approved Applications — Pipeline Progress 
-                     <div class="chart-subtitle">How many have reached each stage</div>
-                  </div>
-                  <div class="chart-wrap" style="height:220px;">
-                     <canvas id="lineChart"></canvas>
-                  </div>
-               </div>
-            </div>
-            <!-- ROW 3: Stage Health Table -->
-            <div class="chart-card" style="margin-bottom:16px;">
-               <div class="chart-title">
-                  &#128203; Stage Health Overview 
-                  <div class="chart-subtitle">Approval rate, pending workload and risk per stage</div>
-               </div>
-               <table class="health-table" id="healthTable"></table>
-            </div>
-            <!-- ROW 4: Pending workload bar -->
+            <!-- Content -->
+            <div id="actionContent"></div>
+         </div>
+         <div class="kpi-row" id="kpiRow"></div>
+         <!-- ROW 1: Donut + Bar -->
+         <div class="chart-grid">
             <div class="chart-card">
                <div class="chart-title">
-                  Pending Workload by Stage 
-                  <div class="chart-subtitle">Applications yet to be actioned at each stage</div>
+                  Overall Status Distribution 
+                  <div class="chart-subtitle">All 110 applications across all stages</div>
                </div>
-               <div class="chart-wrap" style="height:320px;">
-                  <canvas id="pendingBar"></canvas>
+               <div class="chart-wrap" style="height:220px;display:flex;align-items:center;justify-content:center;">
+                  <canvas id="donutChart"></canvas>
                </div>
             </div>
             <div class="chart-card">
-               <div class="chart-title">SLA Risk Heatmap</div>
-               <div class="chart-wrap" style="height:320px;">
-                  <canvas id="slaChart"></canvas>
+               <div class="chart-title">
+                  Approved vs Pending vs Rejected by Stage 
+                  <div class="chart-subtitle">Count per lifecycle stage</div>
+               </div>
+               <div class="chart-wrap" style="height:220px;">
+                  <canvas id="stackedBar"></canvas>
                </div>
             </div>
          </div>
+         <!-- ROW 2: Funnel drop-off + Pipeline velocity -->
+         <div class="chart-grid" style="display:none;">
+            <div class="chart-card">
+               <div class="chart-title">
+                  Funnel Drop-off Rate 
+                  <div class="chart-subtitle">% of applicants lost at each stage</div>
+               </div>
+               <div class="chart-wrap" style="height:220px;">
+                  <canvas id="dropChart"></canvas>
+               </div>
+            </div>
+            <div class="chart-card">
+               <div class="chart-title">
+                  Approved Applications — Pipeline Progress 
+                  <div class="chart-subtitle">How many have reached each stage</div>
+               </div>
+               <div class="chart-wrap" style="height:220px;">
+                  <canvas id="lineChart"></canvas>
+               </div>
+            </div>
+         </div>
+         <!-- ROW 3: Stage Health Table -->
+         <div class="chart-card" style="margin-bottom:16px;">
+            <div class="chart-title">
+               &#128203; Stage Health Overview 
+               <div class="chart-subtitle">Approval rate, pending workload and risk per stage</div>
+            </div>
+            <table class="health-table" id="healthTable"></table>
+         </div>
+         <!-- ROW 4: Pending workload bar -->
+         <div class="chart-card">
+            <div class="chart-title">
+               Pending Workload by Stage 
+               <div class="chart-subtitle">Applications yet to be actioned at each stage</div>
+            </div>
+            <div class="chart-wrap" style="height:320px;">
+               <canvas id="pendingBar"></canvas>
+            </div>
+         </div>
+         <div class="chart-card">
+            <div class="chart-title">Past Due Risk by Stage</div>
+            <div class="chart-wrap" style="height:320px;">
+               <canvas id="slaChart"></canvas>
+            </div>
+         </div>
+      </div>
       </div>
       <!-- ═══════════════ FLOW SCREEN ═══════════════ -->
       <div id="flowScreen">
@@ -730,9 +727,10 @@
                      <th>Status</th>
                      <th>Start Date</th>
                      <th>End Date</th>
-                     <th>SLA Breached by</th>
+                     <th>Past Due By</th>
                      <th>Pending Tasks</th>
                      <th>Rejection Reason</th>
+					 <th>View</th>
                   </tr>
                </thead>
                <tbody id="tableBody"></tbody>
@@ -753,6 +751,15 @@
          /* ═══════════════════════════════════════
             DATA
          ═══════════════════════════════════════ */
+        const phases = [
+  { name: "Application & Evaluation", stages: ["Application","Data Entry","Eligibility","Validation","Interview","Decision"] },
+  { name: "Approval & Setup",         stages: ["Profile","Tracking"] },
+  { name: "Financial & Compliance",   stages: ["Financial","Sweat Equity"] },
+  { name: "Construction & Grant",     stages: ["Construction","Grant"] },
+  { name: "Closing",                      stages: ["Pre-Closing","Closing"] },
+  { name: "Post Go-Live",                 stages: ["Post Support","Reporting"] }
+];
+         
          const stages = [
            "Interest","Application","Data Entry","Eligibility","Validation",
            "Interview","Decision","Profile","Tracking","Financial",
@@ -859,6 +866,43 @@
            });
            const svg = document.getElementById('arrowSvg');
            inner.innerHTML=''; inner.appendChild(svg); inner.insertAdjacentHTML('beforeend',html);
+         // 🔥 PHASE BOXES
+         phases.forEach((phase) => {
+  const firstStage = phase.stages[0];
+  const lastStage  = phase.stages[phase.stages.length - 1];
+  const firstIdx   = SPLITS.indexOf(firstStage);
+  const lastIdx    = SPLITS.indexOf(lastStage);
+  if(firstIdx === -1) return;
+  const x     = gx(firstIdx) - 8;
+  const width = gx(lastIdx) + BW + 8 - x;
+  inner.insertAdjacentHTML('beforeend', `
+    <div style="
+      position:absolute;
+      left:${x}px;
+      top:6px;
+      width:${width}px;
+      height:560px;
+      border:2px dashed #b0c4d8;
+      border-radius:10px;
+      background:rgba(31,95,122,0.03);
+      pointer-events:none;
+    ">
+      <div style="
+        position:absolute;
+        top:-12px;
+        left:50%;
+        transform:translateX(-50%);
+        background:#1f5f7a;
+        color:white;
+        font-size:10px;
+        font-weight:700;
+        padding:2px 12px;
+        border-radius:10px;
+        white-space:nowrap;
+      ">${phase.name}</div>
+    </div>
+  `);
+});
            drawArrows();
          }
          
@@ -898,23 +942,23 @@
            renderHealthTable();
            renderPendingBar();
            renderSLARisk();
-		   renderActionCenter();
+         renderActionCenter();
          }
          
-		 let actionTab = 'sla';
-
-function switchActionTab(tab){
-  actionTab = tab;
-  
-  document.querySelectorAll('#actionContent').forEach(()=>{});
-  
-  renderActionCenter();
-
-  // update tab UI
-  document.querySelectorAll('.chart-card .tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-}
-		 
+         let actionTab = 'sla';
+         
+         function switchActionTab(tab){
+         actionTab = tab;
+         
+         document.querySelectorAll('#actionContent').forEach(()=>{});
+         
+         renderActionCenter();
+         
+         // update tab UI
+         document.querySelectorAll('.chart-card .tab').forEach(t => t.classList.remove('active'));
+         event.target.classList.add('active');
+         }
+         
          function renderKPIs(){
          const slaBreached = apps.filter(a => {
            const s = a.stages[a.currentStage];
@@ -948,10 +992,20 @@ function switchActionTab(tab){
          	{ label:'Applications Completed',  value: finalApproved,  sub:`${convRate}% conversion rate`, icon:'✅' },
          	{ label:'Applications In Progress',value: totalPending,   sub:'Across all stages',        icon:'⏳' },
          	{ label:'Applications Not Passed', value: totalRejected,   sub:'Not moved further',        icon:'✖️' },
-         	{ label:'SLA Breached',            value: slaBreached,    sub:'Needs attention',         icon:'⚠️' },
+         	{ label:'Past Due',            value: slaBreached,    sub:'Needs attention',         icon:'⚠️' },
              { label:'Active Stages', value:activeStages, sub:'Have pending workload', color:'teal', icon:'🔄' },
              { label:'Conversion Rate', value:convRate+'%', sub:'Interest → Reporting', color:'purple', icon:'📈' },
          	{ label:'Forecasted Closures', value:forecastData.forecast, sub:`Based on ${forecastData.conversionRate}% trend`, color:'teal', icon:'🔮' },
+         { label:'Past Due Cases', value: apps.filter(a => {
+         const s = a.stages[a.currentStage];
+         if(!s || s.completedAt) return false;
+         const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         return d > 5;
+         }).length,
+         sub:'Needs immediate action',
+         color:'red',
+         icon:'⚠️'
+         }
            ];
          
            document.getElementById('kpiRow').innerHTML = cards.map(c=>`
@@ -962,194 +1016,194 @@ function switchActionTab(tab){
                <div class="kpi-sub">${c.sub}</div>
              </div>`).join('');
          }
-		 
-		 function renderActionCenter(){
-
-  let data = [];
-
-  if(actionTab === 'sla'){
-
-  data = stages.map(stage => {
-
-    let delayed = 0;
-
-    apps.forEach(a => {
-
-      if(a.rejected || a.currentStage !== stage) return;
-
-      const s = a.stages[stage];
-      if(!s || s.completedAt) return;
-
-      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
-
-      if(d > 5) delayed++;
-
-    });
-
-    return {
-      stage,
-      within: 0,
-      delayed: delayed,
-      value: delayed
-    };
-
-  }).filter(d => d.value > 0);
-}
-
-  if(actionTab === 'pending'){
-
-  data = stages.map(stage => {
-
-    let within = 0;
-    let delayed = 0;
-
-    apps.forEach(a => {
-
-      if(a.rejected || a.currentStage !== stage) return;
-
-      const s = a.stages[stage];
-      if(!s || s.completedAt) return;
-
-      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
-
-      if(d > 5){
-        delayed++;
-      } else {
-        within++;
-      }
-
-    });
-
-    return {
-      stage,
-      within,
-      delayed,
-      value: within + delayed
-    };
-
-  }).filter(d => d.value > 0);
-}
-if(actionTab === 'bottleneck'){
-  data = getBottlenecks().map(d => ({
-    stage: d.stage,
-    value: d.pending,
-    extra: Math.round(d.conversion * 100) + '% conv'
-  }));
-}
-
-if(actionTab === 'quick'){
-
-  data = stages.map(stage => {
-
-    let within = 0;
-    let delayed = 0;
-
-    apps.forEach(a => {
-
-      if(a.rejected || a.currentStage !== stage) return;
-
-      const s = a.stages[stage];
-      if(!s || s.completedAt) return;
-
-      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
-
-      if(d > 5){
-        delayed++;
-      } else {
-        within++;
-      }
-
-    });
-
-    return {
-      stage,
-      within,
-      delayed,
-      value: within + delayed
-    };
-
-  })
-  .filter(d => d.value > 0 && d.value <= 5);
-}
- 
-
-  // RENDER
-  document.getElementById('actionContent').innerHTML = `
-
-<!-- HEADER -->
-<div style="
-  display:grid;
-  grid-template-columns: 1fr 160px 160px 140px;
-  padding:8px 12px;
-  font-size:11px;
-  font-weight:600;
-  align-items:center;
-  color:#777;
-  border-bottom:1px solid #eee;
-">
-  <div>Stage</div>
-  <div>Within the Deadline</div>
-  <div>Delayed - Past the Deadline</div>
-  <div>Total</div>
-</div>
-
-${data.map(d => `
-
-<div style="
-  display:grid;
-  grid-template-columns: 1fr 140px 130px 140px;
-  padding:10px 12px;
-  border-bottom:1px solid #f1f1f1;
-  align-items:center;
-  cursor:pointer;
-" onclick="openStage('${d.stage}')">
-
-  <!-- Stage -->
-  <div>
-    <div style="font-weight:600;">${d.stage}</div>
-    <div style="font-size:11px;color:#007aaa;">
-      ${getActionText(d)}
-    </div>
-  </div>
-
-  <!-- Within -->
-  <div style="color:#2e7d32; font-weight:600;">
-    ${d.within || 0}
-  </div>
-
-  <!-- Delayed -->
-  <div style="color:#a4343a; font-weight:600;">
-    ${d.delayed || 0}
-  </div>
-
-  <!-- Total -->
-  <div style="font-weight:700;">
-    ${d.value}
-  </div>
-
-</div>
-
-`).join('')}
-`;
-
-}
-
-function getBottlenecks(){
-  return stages.map(stage => {
-    const cfg = funnelConfig[stage];
-
-    const total = cfg.approved + cfg.pending + cfg.rejected;
-    const conversion = total > 0 ? (cfg.approved / total) : 0;
-
-    return {
-      stage,
-      pending: cfg.pending,
-      conversion
-    };
-  })
-  .filter(s => s.pending > 5 && s.conversion < 0.6)
-  .sort((a,b)=>b.pending - a.pending);
-}
+         
+         function renderActionCenter(){
+         
+         let data = [];
+         
+         if(actionTab === 'sla'){
+         
+         data = stages.map(stage => {
+         
+         let delayed = 0;
+         
+         apps.forEach(a => {
+         
+         if(a.rejected || a.currentStage !== stage) return;
+         
+         const s = a.stages[stage];
+         if(!s || s.completedAt) return;
+         
+         const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         
+         if(d > 5) delayed++;
+         
+         });
+         
+         return {
+         stage,
+         within: 0,
+         delayed: delayed,
+         value: delayed
+         };
+         
+         }).filter(d => d.value > 0);
+         }
+         
+         if(actionTab === 'pending'){
+         
+         data = stages.map(stage => {
+         
+         let within = 0;
+         let delayed = 0;
+         
+         apps.forEach(a => {
+         
+         if(a.rejected || a.currentStage !== stage) return;
+         
+         const s = a.stages[stage];
+         if(!s || s.completedAt) return;
+         
+         const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         
+         if(d > 5){
+         delayed++;
+         } else {
+         within++;
+         }
+         
+         });
+         
+         return {
+         stage,
+         within,
+         delayed,
+         value: within + delayed
+         };
+         
+         }).filter(d => d.value > 0);
+         }
+         if(actionTab === 'bottleneck'){
+         data = getBottlenecks().map(d => ({
+         stage: d.stage,
+         value: d.pending,
+         extra: Math.round(d.conversion * 100) + '% conv'
+         }));
+         }
+         
+         if(actionTab === 'quick'){
+         
+         data = stages.map(stage => {
+         
+         let within = 0;
+         let delayed = 0;
+         
+         apps.forEach(a => {
+         
+         if(a.rejected || a.currentStage !== stage) return;
+         
+         const s = a.stages[stage];
+         if(!s || s.completedAt) return;
+         
+         const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         
+         if(d > 5){
+         delayed++;
+         } else {
+         within++;
+         }
+         
+         });
+         
+         return {
+         stage,
+         within,
+         delayed,
+         value: within + delayed
+         };
+         
+         })
+         .filter(d => d.value > 0 && d.value <= 5);
+         }
+         
+         
+         // RENDER
+         document.getElementById('actionContent').innerHTML = `
+         
+         <!-- HEADER -->
+         <div style="
+         display:grid;
+         grid-template-columns: 1fr 160px 160px 140px;
+         padding:8px 12px;
+         font-size:11px;
+         font-weight:600;
+         align-items:center;
+         color:#777;
+         border-bottom:1px solid #eee;
+         ">
+         <div>Stage</div>
+         <div>Within the Deadline</div>
+         <div>Delayed - Past the Deadline</div>
+         <div>Total</div>
+         </div>
+         
+         ${data.map(d => `
+         
+         <div style="
+         display:grid;
+         grid-template-columns: 1fr 140px 130px 140px;
+         padding:10px 12px;
+         border-bottom:1px solid #f1f1f1;
+         align-items:center;
+         cursor:pointer;
+         " onclick="openStage('${d.stage}')">
+         
+         <!-- Stage -->
+         <div>
+         <div style="font-weight:600;">${d.stage}</div>
+         <div style="font-size:11px;color:#007aaa;">
+         ${getActionText(d)}
+         </div>
+         </div>
+         
+         <!-- Within -->
+         <div style="color:#2e7d32; font-weight:600;">
+         ${d.within || 0}
+         </div>
+         
+         <!-- Delayed -->
+         <div style="color:#a4343a; font-weight:600;">
+         ${d.delayed || 0}
+         </div>
+         
+         <!-- Total -->
+         <div style="font-weight:700;">
+         ${d.value}
+         </div>
+         
+         </div>
+         
+         `).join('')}
+         `;
+         
+         }
+         
+         function getBottlenecks(){
+         return stages.map(stage => {
+         const cfg = funnelConfig[stage];
+         
+         const total = s === "Interest" ? 110 : cfg.approved + cfg.pending + cfg.rejected;
+         const conversion = total > 0 ? (cfg.approved / total) : 0;
+         
+         return {
+         stage,
+         pending: cfg.pending,
+         conversion
+         };
+         })
+         .filter(s => s.pending > 5 && s.conversion < 0.6)
+         .sort((a,b)=>b.pending - a.pending);
+         }
          
          function calculateForecast(){
          
@@ -1365,19 +1419,19 @@ function getBottlenecks(){
            destroyChart('pending');
          
            const pendingCounts = stages.map(stage => {
-  const pending = apps.filter(a =>
-    !a.rejected && a.currentStage === stage
-  ).length;
-
-  const breaches = apps.filter(a => {
-    const s = a.stages[stage];
-    if(!s || s.completedAt) return false;
-    const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
-    return d > 5;
-  }).length;
-
-  return pending + (breaches * 2); // 🔥 weight breaches higher
-});
+         const pending = apps.filter(a =>
+         !a.rejected && a.currentStage === stage
+         ).length;
+         
+         const breaches = apps.filter(a => {
+         const s = a.stages[stage];
+         if(!s || s.completedAt) return false;
+         const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         return d > 5;
+         }).length;
+         
+         return pending + (breaches * 2); // 🔥 weight breaches higher
+         });
          
            charts['pending'] = new Chart(document.getElementById('pendingBar'),{
              type:'bar',
@@ -1434,7 +1488,7 @@ function getBottlenecks(){
              data:{
                labels: stages,
                datasets:[{
-                 label:'SLA Breaches',
+                 label:'Past Due (Days)',
                  data: breachCounts,
                  backgroundColor: breachCounts.map(v =>
                    v > 10 ? '#a4343a' : v > 5 ? '#c07a00' : '#2e7d32'
@@ -1712,8 +1766,8 @@ function getBottlenecks(){
            };
            document.getElementById('tabs').innerHTML = [
            ['all','All Applications'],
-           ['pending_in','In Progress (Within SLA)'],
-           ['pending_out','Delayed (Out of SLA)'],
+           ['pending_in','In Progress (Within The Past Due)'],
+           ['pending_out','Delayed (Past Due)'],
            ['completed','Applications Completed'],
            ['rejected','Applications Not Passed']
          ].map(([f,l])=>`
@@ -1727,26 +1781,26 @@ function getBottlenecks(){
          function setFilter(f){ filter=f; renderTable(); renderTabs(); }
          
          function renderTable(){
-			let rows = apps.filter(a => (selectedProgram === "all" || a.program === selectedProgram));
-		// 🔹 ALL APPLICATIONS TAB
-		 // 🔹 ALL APPLICATIONS TAB (FIXED)
-if (filter === 'all') {
-  rows = apps.filter(a => 
-    (selectedProgram === "all" || a.program === selectedProgram) &&
-    (
-      stages.indexOf(a.currentStage) >= stages.indexOf(currentStage) ||
-      a.rejectedStage === currentStage
-    )
-  );
-}
-// 🔹 COMPLETED TAB
-if (filter === 'completed') {
-  rows = apps.filter(a => 
-    (selectedProgram === "all" || a.program === selectedProgram) &&
-    !a.rejected &&
-    stages.indexOf(a.currentStage) > stages.indexOf(currentStage)
-  );
-}
+         let rows = apps.filter(a => (selectedProgram === "all" || a.program === selectedProgram));
+         // 🔹 ALL APPLICATIONS TAB
+         // 🔹 ALL APPLICATIONS TAB (FIXED)
+         if (filter === 'all') {
+         rows = apps.filter(a => 
+         (selectedProgram === "all" || a.program === selectedProgram) &&
+         (
+         stages.indexOf(a.currentStage) >= stages.indexOf(currentStage) ||
+         a.rejectedStage === currentStage
+         )
+         );
+         }
+         // 🔹 COMPLETED TAB
+         if (filter === 'completed') {
+         rows = apps.filter(a => 
+         (selectedProgram === "all" || a.program === selectedProgram) &&
+         !a.rejected &&
+         stages.indexOf(a.currentStage) > stages.indexOf(currentStage)
+         );
+         }
          // 🔹 Pending within SLA
          if (filter === 'pending_in') {
            rows = apps.filter(a => {
@@ -1815,18 +1869,18 @@ if (filter === 'completed') {
          
            if(d > 5){
          	sla = `<span class="sla-breach">${d - 5}d</span>`;  } else {
-             sla = `<span class="sla-ok">0d</span>`;
+             sla = `<span class="sla-ok"> - </span>`;
            }
          }
              const isOverdue = sd && !sd.completedAt && Math.ceil((Date.now() - new Date(sd.startedAt))/86400000) > 5;
          	return `<tr class="${isOverdue ? 'row-overdue' : ''}" onclick="openPanel(${a.id})">
                <td>${a.name}</td><td>${a.currentStage}</td>
               <td><span class="badge ${st}">
-           ${
-             st === 'pending'   ? currentStage + ' In Progress' :
-             st === 'completed' ? currentStage + ' Completed' :
-             st === 'rejected'  ? currentStage + ' Not Passed' : st
-           }
+         ${st === 'in-progress' ? 'In Progress' :
+         st === 'completed' ? 'Completed' :
+         st === 'past-due' ? 'Past Due' :
+         st === 'not-started' ? 'Not Started' :
+         st === 'rejected' ? 'Did Not Qualify' : st}
          </span></td>
          
                <td>${startDate}</td><td>${endDate}</td><td>${sla}</td>
@@ -1838,6 +1892,11 @@ if (filter === 'completed') {
                : '-'
            }
          </td>
+		 <td>
+  <button onclick="event.stopPropagation(); openApplicantPage(${a.id})">
+    View
+  </button>
+</td>
              </tr>`;
            }).join('');
          }
@@ -2025,70 +2084,77 @@ if (filter === 'completed') {
            selectedProgram = val;
            renderAll();  // re-render everything with the new filter
          }
-		 
-		 function getQuickWins(){
-  return stages.map(stage => {
-
-    const breaches = apps.filter(a => {
-      const s = a.stages[stage];
-      if(!s || s.completedAt) return false;
-      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
-      return d > 5;
-    }).length;
-
-    const pending = apps.filter(a =>
-      !a.rejected && a.currentStage === stage
-    ).length;
-
-    return { stage, breaches, pending };
-
-  })
-  .filter(s => s.breaches > 0 && s.pending < 5)
-  .sort((a,b)=>b.breaches-a.breaches);
-}
+         
+         function getQuickWins(){
+         return stages.map(stage => {
+         
+         const breaches = apps.filter(a => {
+         const s = a.stages[stage];
+         if(!s || s.completedAt) return false;
+         const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+         return d > 5;
+         }).length;
+         
+         const pending = apps.filter(a =>
+         !a.rejected && a.currentStage === stage
+         ).length;
+         
+         return { stage, breaches, pending };
+         
+         })
+         .filter(s => s.breaches > 0 && s.pending < 5)
+         .sort((a,b)=>b.breaches-a.breaches);
+         }
          
          function renderAll(){ renderPipeline(); renderTabs(); renderTable(); }
-		 
-		 let actionCollapsed = false;
-
-function toggleActionCenter(){
-
-  const body = document.getElementById('actionBody');
-  const icon = document.getElementById('actionToggleIcon');
-
-  if(actionCollapsed){
-    body.style.maxHeight = '500px';   // expand
-    icon.innerText = '▼';
-  } else {
-    body.style.maxHeight = '0px';     // collapse
-    icon.innerText = '▲';
-  }
-
-  actionCollapsed = !actionCollapsed;
-}
-
-function getActionText(d){
-
-  if(actionTab === 'pending'){
-    return `Action: Focus on clearing backlog`;
-  }
-
-  if(actionTab === 'sla'){
-    return `Action: Resolve delayed cases immediately`;
-  }
-
-  if(actionTab === 'bottleneck'){
-    return `Action: Add capacity / investigate drop`;
-  }
-
-  if(actionTab === 'quick'){
-    return `Action: Quick fix possible`;
-  }
-
-  return '';
-}
          
+         let actionCollapsed = false;
          
+         function toggleActionCenter(){
+         
+         const body = document.getElementById('actionBody');
+         const icon = document.getElementById('actionToggleIcon');
+         
+         if(actionCollapsed){
+         body.style.maxHeight = '500px';   // expand
+         icon.innerText = '▼';
+         } else {
+         body.style.maxHeight = '0px';     // collapse
+         icon.innerText = '▲';
+         }
+         
+         actionCollapsed = !actionCollapsed;
+         }
+         
+         function getActionText(d){
+         
+         if(actionTab === 'pending'){
+         return `Action: Focus on clearing backlog`;
+         }
+         
+         if(actionTab === 'sla'){
+         return `Action: Resolve delayed cases immediately`;
+         }
+         
+         if(actionTab === 'bottleneck'){
+         return `Action: Add capacity / investigate drop`;
+         }
+         
+         if(actionTab === 'quick'){
+         return `Action: Quick fix possible`;
+         }
+         
+         return '';
+         }
+         
+         function openApplicantPage(appId){
+
+  const app = apps.find(a => a.id === appId);
+
+  const data = encodeURIComponent(JSON.stringify(app));
+
+  window.open(`applicant.html?data=${data}`, '_blank');
+}
          /* ═══════════════════════════════════════
             INIT
          ═══════════════════════════════════════ */
@@ -2102,4 +2168,4 @@ function getActionText(d){
          renderCollapsedPipeline();
       </script>
    </body>
-</html>	
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Applicant Journey</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f0f4f8; color: #1a2332; }
+
+/* TOPBAR */
+.topbar {
+  background: linear-gradient(135deg, #0095C8 0%, #1f5f7a 100%);
+  color: white; padding: 14px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.topbar-back {
+  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+  color: white; padding: 6px 14px; border-radius: 6px;
+  cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px;
+  text-decoration: none; display: inline-block;
+}
+.topbar-name { font-size: 17px; font-weight: 700; }
+.topbar-id   { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+/* STATUS BADGE */
+.status-hero {
+  padding: 20px 24px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.status-icon { font-size: 36px; }
+.status-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #888; }
+.status-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+.status-sub   { font-size: 13px; color: #555; margin-top: 4px; }
+.status-badge {
+  display: inline-block; padding: 5px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; margin-top: 6px;
+}
+.badge-active   { background: #e6f6fc; color: #0C447C; }
+.badge-done     { background: #e8f5e9; color: #2e7d32; }
+.badge-pastdue  { background: #fdecea; color: #a4343a; }
+.badge-rejected { background: #f0f0f0; color: #555; }
+
+/* MAIN LAYOUT */
+.page { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* SECTION CARD */
+.card {
+  background: white; border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px; overflow: hidden;
+}
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex; align-items: center; gap: 10px;
+}
+.card-icon { font-size: 18px; }
+.card-title { font-size: 14px; font-weight: 700; color: #1f5f7a; }
+.card-sub   { font-size: 11px; color: #888; margin-top: 1px; }
+.card-body  { padding: 20px; }
+
+/* PROGRESS TIMELINE */
+.timeline { position: relative; }
+.timeline-item {
+  display: flex; gap: 14px; margin-bottom: 6px; align-items: flex-start;
+}
+.tl-dot-col {
+  display: flex; flex-direction: column; align-items: center;
+  width: 28px; flex-shrink: 0;
+}
+.tl-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.tl-dot.done    { background: #e8f5e9; color: #2e7d32; border: 2px solid #2e7d32; }
+.tl-dot.current { background: #e6f6fc; color: #0095C8; border: 3px solid #0095C8; }
+.tl-dot.pastdue { background: #fdecea; color: #a4343a; border: 2px solid #a4343a; }
+.tl-dot.pending { background: #f4f6f9; color: #aaa;    border: 2px solid #ddd; }
+.tl-line {
+  width: 2px; flex: 1; min-height: 18px;
+  background: #e2e8f0; margin: 2px 0;
+}
+.tl-line.done { background: #2e7d32; }
+.tl-content { flex: 1; padding-bottom: 14px; }
+.tl-phase   { font-size: 13px; font-weight: 700; color: #1a2332; }
+.tl-what    { font-size: 12px; color: #555; margin-top: 3px; line-height: 1.5; }
+.tl-action  {
+  margin-top: 6px; display: inline-block;
+  background: #fff8e1; color: #b06000;
+  border: 1px solid #e6a700; border-radius: 6px;
+  padding: 3px 10px; font-size: 11px; font-weight: 600;
+}
+.tl-action.none { background: #f4f6f9; color: #888; border-color: #ddd; }
+
+/* WHAT NOW CARD */
+.now-box {
+  background: #e6f6fc; border-radius: 8px; padding: 16px;
+  border-left: 4px solid #0095C8; margin-bottom: 12px;
+}
+.now-box .now-title { font-size: 13px; font-weight: 700; color: #0C447C; margin-bottom: 6px; }
+.now-box .now-text  { font-size: 13px; color: #1f5f7a; line-height: 1.6; }
+
+.action-box {
+  background: #fff8e1; border-radius: 8px; padding: 16px;
+  border-left: 4px solid #e6a700;
+}
+.action-box .action-title { font-size: 13px; font-weight: 700; color: #b06000; margin-bottom: 6px; }
+.action-box .action-text  { font-size: 13px; color: #7a4900; line-height: 1.6; }
+
+/* STAGE DETAIL LIST */
+.stage-row {
+  padding: 12px 0; border-bottom: 1px solid #f0f4f8;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.stage-row:last-child { border-bottom: none; }
+.stage-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.stage-name { font-size: 13px; font-weight: 700; color: #1a2332; }
+.stage-date { font-size: 11px; color: #888; margin-top: 2px; }
+.stage-tasks { margin-top: 6px; }
+.task-item { font-size: 12px; color: #555; padding: 2px 0; display: flex; gap: 6px; align-items: flex-start; }
+.task-done { color: #2e7d32; }
+.task-wait { color: #b06000; }
+
+/* NOT FOUND */
+.not-found {
+  text-align: center; padding: 60px 20px;
+  color: #888; font-size: 15px;
+}
+</style>
+</head>
+<body>
+
+<div id="root">
+  <div class="not-found">Loading applicant data...</div>
+</div>
+
+<script>
+
+/* ─── PHASE MAP (matches Chetan's plain language from Image 1) ─── */
+const phaseMap = [
+  {
+    phase: "Application Submitted",
+    what:  "Your application has been successfully submitted",
+    action: "No action",
+    stages: ["Interest","Application"]
+  },
+  {
+    phase: "Verification in Progress",
+    what:  "We are checking your eligibility and documents",
+    action: "Upload documents if asked",
+    stages: ["Data Entry","Eligibility"]
+  },
+  {
+    phase: "Interview Process",
+    what:  "We are scheduling / conducting your interview",
+    action: "Attend interview",
+    stages: ["Validation","Interview"]
+  },
+  {
+    phase: "Decision Pending",
+    what:  "Your application is being evaluated by the committee",
+    action: "No action",
+    stages: ["Decision"]
+  },
+  {
+    phase: "Approval Complete",
+    what:  "You are approved and we are setting up your profile",
+    action: "Provide additional info if requested",
+    stages: ["Profile","Tracking"]
+  },
+  {
+    phase: "Financial Process",
+    what:  "Financial checks and contributions are being handled",
+    action: "Submit financial documents",
+    stages: ["Financial","Sweat Equity"]
+  },
+  {
+    phase: "Project in Progress",
+    what:  "Your home/project is being built",
+    action: "No action",
+    stages: ["Construction","Grant"]
+  },
+  {
+    phase: "Final Steps",
+    what:  "Final paperwork and ownership steps are underway",
+    action: "Sign documents when asked",
+    stages: ["Pre-Closing","Closing"]
+  },
+  {
+    phase: "Completed",
+    what:  "Your journey is complete",
+    action: "No action",
+    stages: ["Post Support","Reporting"]
+  }
+];
+
+const allStages = [
+  "Interest","Application","Data Entry","Eligibility","Validation",
+  "Interview","Decision","Profile","Tracking","Financial",
+  "Sweat Equity","Construction","Grant","Pre-Closing",
+  "Closing","Post Support","Reporting"
+];
+
+/* ─── READ APP DATA FROM URL ─── */
+function getAppData(){
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('data');
+    if(!raw) return null;
+    return JSON.parse(decodeURIComponent(raw));
+  } catch(e){ return null; }
+}
+
+/* ─── STATUS HELPERS ─── */
+function getStatusLabel(app){
+  if(app.rejected) return { text:'Application Not Passed', cls:'badge-rejected', icon:'✖' };
+  const idx = allStages.indexOf(app.currentStage);
+  if(idx === allStages.length - 1) return { text:'Completed', cls:'badge-done', icon:'🎉' };
+  const s = app.stages && app.stages[app.currentStage];
+  if(s && !s.completedAt){
+    const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+    if(d > 5) return { text:'Action Needed — Past Due', cls:'badge-pastdue', icon:'⚠' };
+  }
+  return { text:'In Progress', cls:'badge-active', icon:'⏳' };
+}
+
+function getPhaseStatus(app, phaseEntry){
+  const stageIdxCurrent = allStages.indexOf(app.currentStage);
+  let allDone = true, anyCurrent = false, anyPastDue = false;
+
+  for(const stage of phaseEntry.stages){
+    const stageIdx = allStages.indexOf(stage);
+    if(stageIdx > stageIdxCurrent){
+      allDone = false; continue;
+    }
+    if(stage === app.currentStage){
+      anyCurrent = true; allDone = false;
+      const s = app.stages && app.stages[stage];
+      if(s && !s.completedAt){
+        const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+        if(d > 5) anyPastDue = true;
+      }
+    }
+  }
+  if(anyPastDue) return 'pastdue';
+  if(anyCurrent) return 'current';
+  if(allDone)    return 'done';
+  return 'pending';
+}
+
+/* ─── RENDER ─── */
+function render(){
+  const app = getAppData();
+  if(!app){
+    document.getElementById('root').innerHTML = `
+      <div class="not-found">
+        ⚠ No applicant data found.<br>
+        <small>Please click View from the dashboard.</small>
+      </div>`;
+    return;
+  }
+
+  const statusInfo = getStatusLabel(app);
+  const currentPhase = phaseMap.find(p => p.stages.includes(app.currentStage)) || phaseMap[0];
+  const currentStageData = app.stages && app.stages[app.currentStage];
+
+  /* ─ PHASE STATUS for timeline ─ */
+  const phaseStatuses = phaseMap.map(p => getPhaseStatus(app, p));
+  const currentPhaseIdx = phaseStatuses.indexOf('current') !== -1
+    ? phaseStatuses.indexOf('current')
+    : phaseStatuses.indexOf('pastdue');
+
+  /* ─ BUILD STAGE LIST ─ */
+  const stageRows = allStages.map(stage => {
+    const s = app.stages && app.stages[stage];
+    if(!s) return null;
+    const stageIdx  = allStages.indexOf(stage);
+    const currentIdx= allStages.indexOf(app.currentStage);
+    if(stageIdx > currentIdx && !app.rejected) return null;
+
+    let icon = '⏳', statusColor = '#b06000';
+    if(app.rejected && app.rejectedStage === stage){
+      icon = '✖'; statusColor = '#a4343a';
+    } else if(s.completedAt || (s.tasks && s.tasks.every(t => t.done))){
+      icon = '✔'; statusColor = '#2e7d32';
+    } else {
+      const d = Math.ceil((Date.now() - new Date(s.startedAt))/86400000);
+      if(d > 5){ icon = '⚠'; statusColor = '#a4343a'; }
+    }
+
+    const startDate = new Date(s.startedAt).toLocaleDateString();
+    const endDate   = s.completedAt ? new Date(s.completedAt).toLocaleDateString() : null;
+
+    const tasks = (s.tasks || []).map(t =>
+      `<div class="task-item">
+        <span class="${t.done ? 'task-done' : 'task-wait'}">${t.done ? '✔' : '○'}</span>
+        <span>${t.name}</span>
+      </div>`
+    ).join('');
+
+    return `
+    <div class="stage-row">
+      <div class="stage-icon" style="color:${statusColor}">${icon}</div>
+      <div style="flex:1">
+        <div class="stage-name">${stage}</div>
+        <div class="stage-date">Started: ${startDate}${endDate ? ' · Completed: '+endDate : ''}</div>
+        <div class="stage-tasks">${tasks}</div>
+      </div>
+    </div>`;
+  }).filter(Boolean);
+
+  /* ─ BUILD HTML ─ */
+  document.getElementById('root').innerHTML = `
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="topbar-back" onclick="window.close()">← Back to Dashboard</a>
+    <div>
+      <div class="topbar-name">${app.name}</div>
+      <div class="topbar-id">Tracking ID: DFCP-${String(app.id + 1000).padStart(4,'0')}</div>
+    </div>
+  </div>
+
+  <!-- STATUS HERO -->
+  <div class="status-hero">
+    <div class="status-icon">${statusInfo.icon}</div>
+    <div>
+      <div class="status-label">Application Status</div>
+      <div class="status-value">${app.currentStage}</div>
+      <div class="status-sub">${currentPhase.what}</div>
+      <span class="status-badge ${statusInfo.cls}">${statusInfo.text}</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- SECTION 1: WHERE AM I -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🗺</div>
+        <div>
+          <div class="card-title">Where Am I in My Journey?</div>
+          <div class="card-sub">Your progress through all phases</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          ${phaseMap.map((p, i) => {
+            const status = phaseStatuses[i];
+            const dotClass = status === 'done' ? 'done' : status === 'current' ? 'current' : status === 'pastdue' ? 'pastdue' : 'pending';
+            const dotSymbol = status === 'done' ? '✔' : status === 'current' ? '→' : status === 'pastdue' ? '!' : '○';
+            const lineClass = status === 'done' ? 'done' : '';
+            return `
+            <div class="timeline-item">
+              <div class="tl-dot-col">
+                <div class="tl-dot ${dotClass}">${dotSymbol}</div>
+                ${i < phaseMap.length - 1 ? `<div class="tl-line ${lineClass}"></div>` : ''}
+              </div>
+              <div class="tl-content">
+                <div class="tl-phase">${p.phase}</div>
+                <div class="tl-what">${p.what}</div>
+                ${status === 'current' || status === 'pastdue' ?
+                  `<span class="tl-action">${p.action !== 'No action' ? '→ ' + p.action : 'No action needed right now'}</span>` : ''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: WHAT IS HAPPENING NOW -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📋</div>
+        <div>
+          <div class="card-title">What Is Happening Right Now</div>
+          <div class="card-sub">Current stage details</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="now-box">
+          <div class="now-title">Current Stage: ${app.currentStage}</div>
+          <div class="now-text">${currentPhase.what}</div>
+        </div>
+        <div class="action-box">
+          <div class="action-title">What You Need To Do</div>
+          <div class="action-text">${currentPhase.action}</div>
+        </div>
+        ${currentStageData && !currentStageData.completedAt ? `
+        <div style="margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;display:none;">TASKS AT THIS STAGE</div>
+          ${(currentStageData.tasks || []).map(t => `
+            <div class="task-item" style="margin-bottom:6px;font-size:13px;">
+              <span class="${t.done ? 'task-done' : 'task-wait'}" style="font-size:15px;">${t.done ? '✔' : '○'}</span>
+              <span style="color:${t.done ? '#2e7d32' : '#555'}">${t.name}</span>
+            </div>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- SECTION 3: FULL JOURNEY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📅</div>
+        <div>
+          <div class="card-title">Your Full Journey</div>
+          <div class="card-sub">All stages from start to now</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ${stageRows.join('')}
+        ${app.rejected ? `
+        <div style="margin-top:12px;padding:12px;background:#fdecea;border-radius:8px;border-left:3px solid #a4343a;">
+          <div style="font-size:12px;font-weight:700;color:#a4343a;">Application Not Passed</div>
+          <div style="font-size:12px;color:#7a2020;margin-top:4px;">Reason: ${app.rejectionReason || 'Did not meet criteria'}</div>
+          <div style="font-size:12px;color:#555;margin-top:6px;">Please contact us if you have questions.</div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- SECTION 4: CONTACT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📞</div>
+        <div>
+          <div class="card-title">Need Help?</div>
+          <div class="card-sub">Contact your case manager</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="font-size:13px;color:#555;line-height:1.8;">
+          If you have questions about your application or need to upload documents,<br>
+          please contact your case manager with your Tracking ID:<br>
+          <b style="font-size:15px;color:#1f5f7a;">DFCP-${String(app.id + 1000).padStart(4,'0')}</b>
+        </div>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Check My Application — DFCP</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f0f4f8; color: #1a2332; min-height: 100vh; }
+
+.topbar {
+  background: linear-gradient(135deg, #0095C8 0%, #1f5f7a 100%);
+  color: white; padding: 16px 24px;
+  display: flex; align-items: center; gap: 14px;
+}
+.topbar-logo { font-size: 20px; font-weight: 700; }
+.topbar-sub  { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+/* SEARCH HERO */
+.hero {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 40px 24px;
+  text-align: center;
+}
+.hero h1 { font-size: 24px; font-weight: 700; color: #1f5f7a; margin-bottom: 8px; }
+.hero p  { font-size: 14px; color: #666; margin-bottom: 28px; }
+.search-box {
+  display: flex; gap: 10px; max-width: 480px;
+  margin: 0 auto; justify-content: center;
+}
+.search-box input {
+  flex: 1; padding: 12px 16px; border: 2px solid #d0d8e4;
+  border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif;
+  outline: none; transition: border-color 0.15s;
+}
+.search-box input:focus { border-color: #0095C8; }
+.search-box button {
+  padding: 12px 24px; background: #0095C8; color: white;
+  border: none; border-radius: 8px; font-size: 14px;
+  font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: background 0.15s;
+}
+.search-box button:hover { background: #007aaa; }
+
+.error-msg {
+  color: #a4343a; background: #fdecea; border: 1px solid #f09595;
+  padding: 10px 16px; border-radius: 8px; font-size: 13px;
+  max-width: 480px; margin: 16px auto 0; display: none;
+}
+
+/* TRACKING ID HINT */
+.hint { font-size: 12px; color: #999; margin-top: 10px; }
+
+/* RESULT AREA */
+#resultArea { display: none; }
+.page { max-width: 800px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* CARD */
+.card {
+  background: white; border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px; overflow: hidden;
+}
+.card-header {
+  padding: 14px 20px; border-bottom: 1px solid #eef2f7;
+  display: flex; align-items: center; gap: 10px;
+}
+.card-icon  { font-size: 18px; }
+.card-title { font-size: 14px; font-weight: 700; color: #1f5f7a; }
+.card-sub   { font-size: 11px; color: #888; margin-top: 1px; }
+.card-body  { padding: 20px; }
+
+/* STATUS HERO */
+.status-hero {
+  background: white; border: 1px solid #e2e8f0;
+  border-radius: 12px; padding: 20px 24px;
+  display: flex; align-items: center; gap: 20px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.status-icon  { font-size: 40px; }
+.status-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #888; }
+.status-value { font-size: 20px; font-weight: 700; margin-top: 2px; color: #1a2332; }
+.status-sub   { font-size: 13px; color: #555; margin-top: 4px; }
+.status-badge {
+  display: inline-block; padding: 5px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; margin-top: 6px;
+}
+.badge-active   { background: #e6f6fc; color: #0C447C; }
+.badge-done     { background: #e8f5e9; color: #2e7d32; }
+.badge-pastdue  { background: #fdecea; color: #a4343a; }
+.badge-rejected { background: #f0f0f0; color: #555; }
+
+/* TIMELINE */
+.timeline-item {
+  display: flex; gap: 14px; margin-bottom: 6px; align-items: flex-start;
+}
+.tl-dot-col {
+  display: flex; flex-direction: column; align-items: center;
+  width: 28px; flex-shrink: 0;
+}
+.tl-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.tl-dot.done    { background: #e8f5e9; color: #2e7d32; border: 2px solid #2e7d32; }
+.tl-dot.current { background: #e6f6fc; color: #0095C8; border: 3px solid #0095C8; }
+.tl-dot.pastdue { background: #fdecea; color: #a4343a; border: 2px solid #a4343a; }
+.tl-dot.pending { background: #f4f6f9; color: #aaa;    border: 2px solid #ddd; }
+.tl-line { width: 2px; flex: 1; min-height: 18px; background: #e2e8f0; margin: 2px 0; }
+.tl-line.done { background: #2e7d32; }
+.tl-content { flex: 1; padding-bottom: 14px; }
+.tl-phase   { font-size: 13px; font-weight: 700; color: #1a2332; }
+.tl-what    { font-size: 12px; color: #555; margin-top: 3px; line-height: 1.5; }
+.tl-action  {
+  margin-top: 6px; display: inline-block;
+  background: #fff8e1; color: #b06000;
+  border: 1px solid #e6a700; border-radius: 6px;
+  padding: 3px 10px; font-size: 11px; font-weight: 600;
+}
+
+/* NOW / ACTION BOXES */
+.now-box {
+  background: #e6f6fc; border-radius: 8px; padding: 16px;
+  border-left: 4px solid #0095C8; margin-bottom: 12px;
+}
+.now-box .now-title { font-size: 13px; font-weight: 700; color: #0C447C; margin-bottom: 6px; }
+.now-box .now-text  { font-size: 13px; color: #1f5f7a; line-height: 1.6; }
+.action-box {
+  background: #fff8e1; border-radius: 8px; padding: 16px;
+  border-left: 4px solid #e6a700;
+}
+.action-box .action-title { font-size: 13px; font-weight: 700; color: #b06000; margin-bottom: 6px; }
+.action-box .action-text  { font-size: 13px; color: #7a4900; line-height: 1.6; }
+
+/* STAGE ROWS */
+.stage-row {
+  padding: 12px 0; border-bottom: 1px solid #f0f4f8;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.stage-row:last-child { border-bottom: none; }
+.task-item { font-size: 12px; color: #555; padding: 2px 0; display: flex; gap: 6px; }
+
+/* SEARCH AGAIN */
+.search-again {
+  text-align: center; margin: 20px 0;
+}
+.search-again button {
+  padding: 10px 24px; background: transparent;
+  border: 2px solid #0095C8; color: #0095C8;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.search-again button:hover { background: #0095C8; color: white; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-logo">🏡 DFCP Applicant Portal</div>
+    <div class="topbar-sub">Check the status of your application</div>
+  </div>
+</div>
+
+<!-- SEARCH HERO -->
+<div class="hero">
+  <h1>Where is my application?</h1>
+  <p>Enter your name exactly as it appears on your application to see your status.</p>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="e.g. Applicant 5" onkeydown="if(event.key==='Enter') doSearch()"/>
+    <button onclick="doSearch()">Search</button>
+  </div>
+  <div class="error-msg" id="errorMsg">We could not find that name. Please check the spelling and try again.</div>
+  <div class="hint">Your tracking ID (e.g. DFCP-1005) also works as a search term.</div>
+</div>
+
+<!-- RESULT -->
+<div id="resultArea"></div>
+
+<script>
+
+/* ═══════════════════════════════════════
+   PHASE MAP — plain language for applicants
+   (matches Image 1 from Vivek's spreadsheet)
+═══════════════════════════════════════ */
+const phaseMap = [
+  { phase:"Application Submitted",    what:"Your application has been successfully submitted",          action:"No action",                        stages:["Interest","Application"] },
+  { phase:"Verification in Progress", what:"We are checking your eligibility and documents",            action:"Upload documents if asked",         stages:["Data Entry","Eligibility"] },
+  { phase:"Interview Process",        what:"We are scheduling / conducting your interview",             action:"Attend interview",                  stages:["Validation","Interview"] },
+  { phase:"Decision Pending",         what:"Your application is being evaluated by the committee",      action:"No action",                        stages:["Decision"] },
+  { phase:"Approval Complete",        what:"You are approved and we are setting up your profile",       action:"Provide additional info if asked",  stages:["Profile","Tracking"] },
+  { phase:"Financial Process",        what:"Financial checks and contributions are being handled",      action:"Submit financial documents",        stages:["Financial","Sweat Equity"] },
+  { phase:"Project in Progress",      what:"Your home / project is being built",                       action:"No action",                        stages:["Construction","Grant"] },
+  { phase:"Final Steps",              what:"Final paperwork and ownership steps are underway",          action:"Sign documents when asked",         stages:["Pre-Closing","Closing"] },
+  { phase:"Completed 🎉",             what:"Your journey is complete — congratulations!",              action:"No action",                        stages:["Post Support","Reporting"] }
+];
+
+const allStages = [
+  "Interest","Application","Data Entry","Eligibility","Validation",
+  "Interview","Decision","Profile","Tracking","Financial",
+  "Sweat Equity","Construction","Grant","Pre-Closing",
+  "Closing","Post Support","Reporting"
+];
+
+const stageTasks = {
+  "Interest":     ["Capture basic applicant details","Log interest in system","Send initial communication"],
+  "Application":  ["Fill application form","Upload initial documents","Review submitted application","Mark application complete"],
+  "Data Entry":   ["Enter applicant data into system","Verify entered data","Sync data across systems"],
+  "Eligibility":  ["Calculate income eligibility","Verify financial inputs","Mark eligibility status"],
+  "Validation":   ["Credit check initiated","Background verification completed","Validation outcome recorded"],
+  "Interview":    ["Schedule interview","Conduct interview","Record interview notes","Submit outcome"],
+  "Decision":     ["Prepare summary","Present to committee","Record decision","Notify applicant"],
+  "Profile":      ["Create applicant profile","Upload documents","Link application data"],
+  "Tracking":     ["Update application progress","Track milestones","Sync status"],
+  "Financial":    ["Track income changes","Update financial records","Validate compliance"],
+  "Sweat Equity": ["Log volunteer hours","Validate hours","Update progress"],
+  "Construction": ["Track construction progress","Update milestones","Verify completion"],
+  "Grant":        ["Track grant eligibility","Monitor deadlines","Update grant status"],
+  "Pre-Closing":  ["Verify documents","Compliance checks","Prepare checklist"],
+  "Closing":      ["Finalize documentation","Transfer ownership","Confirm closing"],
+  "Post Support": ["Track support","Log interactions","Update notes"],
+  "Reporting":    ["Aggregate data","Generate reports","Submit reports"]
+};
+
+const funnelConfig = {
+  "Interest":     { approved:110, pending:0,  rejected:0  },
+  "Application":  { approved:85,  pending:15, rejected:10 },
+  "Data Entry":   { approved:70,  pending:10, rejected:5  },
+  "Eligibility":  { approved:55,  pending:10, rejected:5  },
+  "Validation":   { approved:45,  pending:5,  rejected:5  },
+  "Interview":    { approved:35,  pending:5,  rejected:5  },
+  "Decision":     { approved:25,  pending:5,  rejected:5  },
+  "Profile":      { approved:20,  pending:3,  rejected:2  },
+  "Tracking":     { approved:18,  pending:1,  rejected:1  },
+  "Financial":    { approved:17,  pending:1,  rejected:0  },
+  "Sweat Equity": { approved:16,  pending:1,  rejected:0  },
+  "Construction": { approved:16,  pending:0,  rejected:0  },
+  "Grant":        { approved:16,  pending:0,  rejected:0  },
+  "Pre-Closing":  { approved:15,  pending:1,  rejected:0  },
+  "Closing":      { approved:15,  pending:0,  rejected:0  },
+  "Post Support": { approved:15,  pending:0,  rejected:0  },
+  "Reporting":    { approved:15,  pending:0,  rejected:0  }
+};
+
+/* ═══════════════════════════════════════
+   BUILD APPS DATA — same logic as dashboard
+   TO ADD REAL NAMES: change "Applicant "+(i+1)
+   to your real family names array
+═══════════════════════════════════════ */
+let apps = Array.from({length:110}, (_,i) => ({
+  id: i,
+  name: "Applicant " + (i+1),
+  /* 🔴 TO USE REAL NAMES, replace the line above with:
+     name: realNames[i] || "Applicant " + (i+1),
+     And add: const realNames = ["Smith Family","Jones Family",...]; at the top */
+  program: i % 2 === 0 ? "A" : "B",
+  currentStage: "Interest",
+  rejected: false, rejectedStage: null, rejectionReason: null,
+  funnel: {}, stages: {}
+}));
+
+function generateFunnel(){
+  let pool = [...apps];
+  allStages.forEach((stage, idx) => {
+    if(idx === 0){ pool.forEach(a => { a.funnel[stage]='approved'; }); return; }
+    const {approved,pending,rejected} = funnelConfig[stage];
+    let c = 0, next = [];
+    pool.forEach(a => {
+      if(c < approved)              { a.funnel[stage]='approved'; next.push(a); }
+      else if(c < approved+pending) { a.funnel[stage]='pending';  next.push(a); }
+      else { a.funnel[stage]='rejected'; a.rejected=true; a.rejectedStage=stage; a.rejectionReason="Did not meet criteria"; }
+      c++;
+    });
+    pool = next;
+  });
+}
+
+function initStageData(){
+  /* Use a fixed seed so same data shows every time page is refreshed */
+  let seed = 42;
+  function seededRand(){ seed=(seed*9301+49297)%233280; return seed/233280; }
+
+  apps.forEach(app => {
+    let furthest = "Interest";
+    allStages.forEach(s => { if(app.funnel[s]==='approved'||app.funnel[s]==='pending') furthest=s; });
+    app.currentStage = app.rejected ? app.rejectedStage : furthest;
+    let reached = false;
+    allStages.forEach(stage => {
+      if(reached) return;
+      const dAgo = Math.floor(seededRand()*20)+1;
+      const startedAt = new Date(Date.now()-dAgo*86400000);
+      if(stage===app.currentStage){
+        reached = true;
+        app.stages[stage] = { startedAt, completedAt:null, tasks:(stageTasks[stage]||[]).map(t=>({name:t,done:false})) };
+      } else {
+        app.stages[stage] = { startedAt, completedAt:new Date(startedAt.getTime()+2*86400000), tasks:(stageTasks[stage]||[]).map(t=>({name:t,done:true})) };
+      }
+    });
+  });
+}
+
+generateFunnel();
+initStageData();
+
+/* ═══════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════ */
+function doSearch(){
+  const raw = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(!raw){ return; }
+
+  /* Search by name OR tracking ID (e.g. DFCP-1005 → id=5) */
+  let found = apps.find(a => a.name.toLowerCase() === raw);
+  if(!found){
+    const tidMatch = raw.match(/dfcp-?(\d+)/i);
+    if(tidMatch){ const id = parseInt(tidMatch[1]) - 1000; found = apps.find(a => a.id === id); }
+  }
+  /* Partial name match fallback */
+  if(!found) found = apps.find(a => a.name.toLowerCase().includes(raw));
+
+  const errEl = document.getElementById('errorMsg');
+  if(!found){
+    errEl.style.display = 'block';
+    document.getElementById('resultArea').style.display = 'none';
+    return;
+  }
+  errEl.style.display = 'none';
+  showResult(found);
+}
+
+/* ═══════════════════════════════════════
+   RENDER RESULT
+═══════════════════════════════════════ */
+function getPhaseStatus(app, phaseEntry){
+  const curIdx = allStages.indexOf(app.currentStage);
+  let allDone=true, anyCurrent=false, anyPastDue=false;
+  for(const stage of phaseEntry.stages){
+    const si = allStages.indexOf(stage);
+    if(si > curIdx){ allDone=false; continue; }
+    if(stage===app.currentStage){
+      anyCurrent=true; allDone=false;
+      const s=app.stages[stage];
+      if(s&&!s.completedAt){ const d=Math.ceil((Date.now()-new Date(s.startedAt))/86400000); if(d>5) anyPastDue=true; }
+    }
+  }
+  if(anyPastDue) return 'pastdue';
+  if(anyCurrent) return 'current';
+  if(allDone)    return 'done';
+  return 'pending';
+}
+
+function showResult(app){
+  const area = document.getElementById('resultArea');
+  area.style.display = 'block';
+
+  const trackId = 'DFCP-' + String(app.id+1000).padStart(4,'0');
+  const curPhase = phaseMap.find(p=>p.stages.includes(app.currentStage)) || phaseMap[0];
+  const phaseStatuses = phaseMap.map(p=>getPhaseStatus(app,p));
+  const curStageData = app.stages[app.currentStage];
+
+  let statusIcon='⏳', statusText='In Progress', statusCls='badge-active';
+  if(app.rejected){ statusIcon='✖'; statusText='Application Not Passed'; statusCls='badge-rejected'; }
+  else if(app.currentStage==='Reporting'){ statusIcon='🎉'; statusText='Completed'; statusCls='badge-done'; }
+  else if(curStageData&&!curStageData.completedAt){
+    const d=Math.ceil((Date.now()-new Date(curStageData.startedAt))/86400000);
+    if(d>5){ statusIcon='⚠'; statusText='Action Needed — Past Due'; statusCls='badge-pastdue'; }
+  }
+
+  /* Stage rows */
+  const curIdx = allStages.indexOf(app.currentStage);
+  const stageRows = allStages.map(stage=>{
+    const s=app.stages[stage]; if(!s) return '';
+    const si=allStages.indexOf(stage);
+    if(si>curIdx&&!app.rejected) return '';
+    let icon='⏳', col='#b06000';
+    if(app.rejected&&app.rejectedStage===stage){ icon='✖'; col='#a4343a'; }
+    else if(s.completedAt||(s.tasks&&s.tasks.every(t=>t.done))){ icon='✔'; col='#2e7d32'; }
+    else { const d=Math.ceil((Date.now()-new Date(s.startedAt))/86400000); if(d>5){icon='⚠';col='#a4343a';} }
+    const sd=new Date(s.startedAt).toLocaleDateString();
+    const ed=s.completedAt?new Date(s.completedAt).toLocaleDateString():null;
+    const tasks=(s.tasks||[]).map(t=>`<div class="task-item"><span style="color:${t.done?'#2e7d32':'#b06000'}">${t.done?'✔':'○'}</span><span>${t.name}</span></div>`).join('');
+    return `<div class="stage-row">
+      <div style="font-size:18px;color:${col};flex-shrink:0;margin-top:2px;">${icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;">${stage}</div>
+        <div style="font-size:11px;color:#888;">Started: ${sd}${ed?' · Completed: '+ed:''}</div>
+        <div style="margin-top:5px;">${tasks}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  area.innerHTML = `
+  <div class="page">
+
+    <div class="search-again">
+      <button onclick="resetSearch()">← Search for a different applicant</button>
+    </div>
+
+    <!-- STATUS HERO -->
+    <div class="status-hero">
+      <div class="status-icon">${statusIcon}</div>
+      <div>
+        <div class="status-label">Application Status</div>
+        <div class="status-value">${app.name}</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;">Tracking ID: <b style="color:#1f5f7a;">${trackId}</b></div>
+        <div class="status-sub" style="margin-top:6px;">${curPhase.what}</div>
+        <span class="status-badge ${statusCls}">${statusText}</span>
+      </div>
+    </div>
+
+    <!-- WHERE AM I -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🗺</div>
+        <div>
+          <div class="card-title">Where Am I in My Journey?</div>
+          <div class="card-sub">Your progress through all phases</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ${phaseMap.map((p,i)=>{
+          const st=phaseStatuses[i];
+          const dc=st==='done'?'done':st==='current'?'current':st==='pastdue'?'pastdue':'pending';
+          const ds=st==='done'?'✔':st==='current'?'→':st==='pastdue'?'!':'○';
+          const lc=st==='done'?'done':'';
+          return `<div class="timeline-item">
+            <div class="tl-dot-col">
+              <div class="tl-dot ${dc}">${ds}</div>
+              ${i<phaseMap.length-1?`<div class="tl-line ${lc}"></div>`:''}
+            </div>
+            <div class="tl-content">
+              <div class="tl-phase">${p.phase}</div>
+              <div class="tl-what">${p.what}</div>
+              ${(st==='current'||st==='pastdue')?`<span class="tl-action">${p.action!=='No action'?'→ '+p.action:'No action needed right now'}</span>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- WHAT IS HAPPENING -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📋</div>
+        <div>
+          <div class="card-title">What Is Happening Right Now</div>
+          <div class="card-sub">Current stage: ${app.currentStage}</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="now-box">
+          <div class="now-title">Currently at: ${app.currentStage}</div>
+          <div class="now-text">${curPhase.what}</div>
+        </div>
+        <div class="action-box">
+          <div class="action-title">What You Need To Do</div>
+          <div class="action-text">${curPhase.action}</div>
+        </div>
+        ${curStageData&&!curStageData.completedAt?`
+        <div style="margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px;">Tasks at this stage</div>
+          ${(curStageData.tasks||[]).map(t=>`
+            <div class="task-item" style="margin-bottom:7px;font-size:13px;">
+              <span style="color:${t.done?'#2e7d32':'#b06000'};font-size:15px;">${t.done?'✔':'○'}</span>
+              <span style="color:${t.done?'#2e7d32':'#555'}">${t.name}</span>
+            </div>`).join('')}
+        </div>`:''}
+      </div>
+    </div>
+
+    <!-- FULL JOURNEY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📅</div>
+        <div>
+          <div class="card-title">Your Full Journey</div>
+          <div class="card-sub">All stages from start to now</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ${stageRows}
+        ${app.rejected?`<div style="margin-top:12px;padding:12px;background:#fdecea;border-radius:8px;border-left:3px solid #a4343a;">
+          <div style="font-size:12px;font-weight:700;color:#a4343a;">Application Not Passed</div>
+          <div style="font-size:12px;color:#7a2020;margin-top:4px;">Reason: ${app.rejectionReason||'Did not meet criteria'}</div>
+          <div style="font-size:12px;color:#555;margin-top:6px;">Please contact us if you have questions about this decision.</div>
+        </div>`:''}
+      </div>
+    </div>
+
+    <!-- HELP -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📞</div>
+        <div>
+          <div class="card-title">Need Help?</div>
+          <div class="card-sub">Contact your case manager</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="font-size:13px;color:#555;line-height:1.9;">
+          If you have questions or need to upload documents, please contact your case manager.<br>
+          Always quote your Tracking ID: <b style="font-size:15px;color:#1f5f7a;">${trackId}</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-again">
+      <button onclick="resetSearch()">← Search for a different applicant</button>
+    </div>
+  </div>`;
+
+  area.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetSearch(){
+  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('errorMsg').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
