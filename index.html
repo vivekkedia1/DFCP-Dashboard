@@ -38,22 +38,28 @@
          /* ── FUNNEL DASHBOARD ─────────────────── */
          #dashboardScreen { display: block; }
          .funnel-outer {
-         overflow-x: auto;
-         overflow-y: hidden;
-         height: 580px;
-         background: #f0f4f8;
-         padding: 0;
-         position: relative;
-         }
+  overflow-x: auto;
+  overflow-y: visible;
+  height: 580px;
+  background: white;
+  padding: 0;
+  position: relative;
+  margin: 0 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
          .funnel-inner {
          position: relative;
          height: 580px;
+		 padding-top: 25px; 
          }
          .sg {
-         position: absolute;
-         width: 162px;
-         cursor: pointer;
-         }
+  position: absolute;
+  width: 162px;
+  cursor: pointer;
+  z-index: 2;
+}
          .sg:hover .sg-box { background: #fafffe; }
          .sg-header {
          background: var(--teal);
@@ -68,6 +74,7 @@
          display: flex;
          align-items: center;
          justify-content: center;
+		
          }
          .sg-box {
          background: white;
@@ -79,6 +86,9 @@
          height: 38px;
          display: flex;
          align-items: center;
+		 white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
          }
          .sg-box.approved { color: #2e7d32; border-top: none; }
          .sg-box.pending  { color: #b06000; border-top: none; margin-top: 5px; }
@@ -96,10 +106,11 @@
          .sg-box.approved { border-radius: 0; }
          .sg-box.rejected { border-radius: 0 0 4px 4px; }
          .sg-init {
-         position: absolute;
-         width: 138px;
-         cursor: pointer;
-         }
+  position: absolute;
+  width: 138px;
+  cursor: pointer;
+  z-index: 2;
+}
          .sg-init:hover .ig-count { background: #f0faff; }
          .ig-header {
          background: var(--teal);
@@ -576,6 +587,22 @@
          overflow: hidden;
          transition: max-height 0.3s ease;
          }
+		 
+		 .funnel-toggle-btn {
+  background: #1f5f7a;
+  color: white;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.funnel-toggle-btn:hover {
+  background: #0095C8;
+}
       </style>
    </head>
    <body>
@@ -618,6 +645,7 @@
             </div>
          </div>
          <!-- ═══ REPORTING SECTION ═══ -->
+		 <!--<div id="phaseSummary" style="display:flex; gap:14px; padding:16px 20px; overflow-x:auto; background:white; border-bottom:1px solid #eee;"></div>-->
          <div class="report-section">
             <!-- KPI CARDS -->
             <div class="report-section-title">&#128200; Leadership Summary <span>Real-time overview</span></div>
@@ -638,9 +666,6 @@
                   <div id="actionContent"style="max-height:320px; overflow-y:auto;"></div>
                </div>
             </div>
-            <!-- Content -->
-            <div id="actionContent"></div>
-         </div>
          <div class="kpi-row" id="kpiRow"></div>
          <!-- ROW 1: Donut + Bar -->
          <div class="chart-grid">
@@ -857,11 +882,14 @@
              const cfg=funnelConfig[stage], x=gx(i), y=gy(i);
              html += `
              <div class="sg" style="left:${x}px;top:${y}px;" onclick="openStage('${stage}')">
-               <div class="sg-header">${stage}</div>
+               <div class="sg-header">
+  <span style="font-size:10px;">${stage}</span>
+  <span style="font-size:9px;opacity:0.75;margin-left:4px;">(${cfg.approved + cfg.pending + cfg.rejected})</span>
+</div>
                <div class="sg-box approved">${stage} Cleared – ${cfg.approved}</div>
          	  <div class="sg-box in-sla">${stage} In Progress (Within SLA) – ${Math.floor(cfg.pending * 0.6)}</div>
-         	  <div class="sg-box out-sla">${stage} Delayed (Out of SLA) – ${Math.ceil(cfg.pending * 0.4)}</div>
-         	  <div class="sg-box rejected">${stage} Not Cleared – ${cfg.rejected}</div>
+         	  <div class="sg-box out-sla">${stage} Past Due (Out of SLA) – ${Math.ceil(cfg.pending * 0.4)}</div>
+         	  <div class="sg-box rejected">${stage} Not Qualified – ${cfg.rejected}</div>
              </div>`;
            });
            const svg = document.getElementById('arrowSvg');
@@ -879,27 +907,30 @@
     <div style="
       position:absolute;
       left:${x}px;
-      top:6px;
-      width:${width}px;
-      height:560px;
-      border:2px dashed #b0c4d8;
-      border-radius:10px;
-      background:rgba(31,95,122,0.03);
+      top:0px;
+width:${width}px;
+height:570px;
+border:2px dashed #1f5f7a;
+border-radius:12px;
+background:rgba(31,95,122,0.03);
       pointer-events:none;
     ">
       <div style="
-        position:absolute;
-        top:-12px;
-        left:50%;
-        transform:translateX(-50%);
-        background:#1f5f7a;
-        color:white;
-        font-size:10px;
-        font-weight:700;
-        padding:2px 12px;
-        border-radius:10px;
-        white-space:nowrap;
-      ">${phase.name}</div>
+  position:absolute;
+  top:4px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#1f5f7a;
+  color:white;
+  font-size:11px;
+padding:3px 14px;
+  font-weight:700;
+  border-radius:10px;
+  white-space:nowrap;
+  letter-spacing:0.3px;
+">
+  ${phase.name}
+</div>
     </div>
   `);
 });
@@ -1604,6 +1635,37 @@
          
            });
          }
+		 
+		 
+		 function calculatePhaseData() {
+
+  let phaseData = {};
+
+  phases.forEach(phase => {
+
+    let approved = 0;
+    let pending = 0;
+    let rejected = 0;
+
+    phase.stages.forEach(stage => {
+      const cfg = funnelConfig[stage];
+      if (!cfg) return;
+
+      approved += cfg.approved;
+      pending  += cfg.pending;
+      rejected += cfg.rejected;
+    });
+
+    phaseData[phase.name] = {
+      approved,
+      pending,
+      rejected,
+      total: approved + pending + rejected
+    };
+  });
+
+  return phaseData;
+}
          
          function getStatus(a,stage){
          
@@ -1703,7 +1765,7 @@
            document.getElementById("collapsedPipeline").innerHTML = stages.map((s, i) => {
          
              const cfg = funnelConfig[s];
-             const total = cfg.approved + cfg.pending + cfg.rejected;
+             const total = s === "Interest" ? 110 : cfg.approved + cfg.pending + cfg.rejected;
          
              return `
                <div style="display:flex;align-items:center;gap:8px;">
@@ -1976,6 +2038,7 @@
          
            renderFunnel();
            renderReporting();
+		   
            renderAll();
          }
          function rejectApp(){
@@ -1993,6 +2056,7 @@
          
            renderFunnel();
            renderReporting();
+		   
            renderAll();
          }
          function confirmMove(){ pendingAction='move'; document.getElementById('modal').style.display='flex'; }
@@ -2150,6 +2214,56 @@
          function openApplicantPage(appId) {
   window.open(`applicant-lookup.html?appId=${appId}`, '_blank');
 }
+
+function renderPhaseSummary(){
+
+  const data = calculatePhaseData();
+
+  const html = phases.map(p => {
+
+    const d = data[p.name];
+
+    return `
+      <div style="
+        min-width:220px;
+        background:#1f5f7a;
+        color:white;
+        border-radius:10px;
+        padding:14px;
+        cursor:pointer;
+      " onclick="openPhase('${p.name}')">
+
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;">
+          ${p.name}
+        </div>
+
+        <div style="font-size:26px;font-weight:700;margin-bottom:8px;">
+          ${d.total}
+        </div>
+
+        <div style="display:flex;justify-content:space-between;font-size:11px;">
+          <span style="color:#a4d600;">✔ ${d.approved}</span>
+          <span style="color:#ffd54f;">⏳ ${d.pending}</span>
+          <span style="color:#ff8a80;">✖ ${d.rejected}</span>
+        </div>
+
+      </div>
+    `;
+
+  }).join('');
+
+  document.getElementById('phaseSummary').innerHTML = html;
+}
+
+function openPhase(phaseName){
+
+  const phase = phases.find(p => p.name === phaseName);
+
+  if(!phase) return;
+
+  // go to first stage of that phase
+  openStage(phase.stages[0]);
+}
          /* ═══════════════════════════════════════
             INIT
          ═══════════════════════════════════════ */
@@ -2158,6 +2272,7 @@
          recalculateFunnel();
          renderFunnel();
          renderReporting();
+		 
          document.getElementById("funnelOuter").style.display = "none";
          document.getElementById("collapsedFlow").style.display = "block";
          renderCollapsedPipeline();
